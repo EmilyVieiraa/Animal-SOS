@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Se for arquivo/pasta real, não reescreve
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Envia tudo para index.php (mantém querystring)
+RewriteRule ^ index.php [QSA,L]
+
