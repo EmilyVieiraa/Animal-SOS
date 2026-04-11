@@ -15,7 +15,7 @@ if (APP_ENV === 'prod') {
 }
 
 // URL Base (evite barra final para não dar // nos links)
-define('BASE_URL', 'http://localhost/animalSOS/public');
+define('BASE_URL', 'http://localhost:8000');
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');

@@ -597,3 +597,45 @@ FILE 0: {
 }
 MOVE 0: ok=1 dest=C:\xampp\htdocs\AnimalSOS/public/uploads/animais/92a3c260a6f527577dbda95a0c51cbd3.png
 
+{
+    "time": "2026-04-11T14:16:57-03:00",
+    "field": "fotos",
+    "uploadDir": "C:\\xampp\\htdocs\\AnimalSOS/public/uploads/animais",
+    "is_dir(uploadDir)": true,
+    "is_writable(uploadDir)": true,
+    "ini": {
+        "file_uploads": "1",
+        "upload_max_filesize": "40M",
+        "post_max_size": "40M",
+        "max_file_uploads": "20",
+        "upload_tmp_dir": "C:\\xampp\\tmp"
+    },
+    "_FILES_keys": [
+        "fotos"
+    ],
+    "_FILES_field": {
+        "name": [
+            ""
+        ],
+        "full_path": [
+            ""
+        ],
+        "type": [
+            ""
+        ],
+        "tmp_name": [
+            ""
+        ],
+        "error": [
+            4
+        ],
+        "size": [
+            0
+        ]
+    },
+    "after_mkdir_is_dir": true,
+    "after_mkdir_is_writable": true
+}
+
+SEM ARQUIVOS: $files vazio após normalização.
+

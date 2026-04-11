@@ -16,7 +16,7 @@ $titulo    = (string)($a['titulo'] ?? '');
 $especie   = (string)($a['especie'] ?? 'Animal');
 $condicao  = (string)($a['condicao'] ?? '');
 $descricao = (string)($a['descricao'] ?? '');
-$dataHora  = (string)($a['data_hora'] ?? '');
+$dataHora  = formatDateTime((string)($a['data_hora'] ?? ''));
 $st        = (string)($a['status'] ?? '');
 $autorNome = (string)($a['usuario_nome'] ?? $a['nome'] ?? 'Usuário');
 

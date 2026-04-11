@@ -13,8 +13,10 @@ if (!function_exists('statusBadgeClassUI')) {
     function statusBadgeClassUI(string $s): string {
         $s = mb_strtolower(trim($s));
         if ($s === 'aguardando') return 'tag tag-warn';
+        if ($s === 'em andamento') return 'tag tag-info';
         if ($s === 'resgatado')  return 'tag tag-ok';
         if ($s === 'adoção' || $s === 'adocao') return 'tag tag-info';
+        if ($s === 'finalizado') return 'tag tag-ok';
         return 'tag';
     }
 }
@@ -33,6 +35,24 @@ if (!function_exists('condicaoBadgeClassUI')) {
         }
 
         return 'tag tag-info';
+    }
+}
+
+if (!function_exists('formatDateTime')) {
+    function formatDateTime(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            $dt = new DateTime($value);
+        } catch (Exception $e) {
+            return $value;
+        }
+
+        $format = strpos($value, ' ') !== false ? 'd/m/Y H:i' : 'd/m/Y';
+        return $dt->format($format);
     }
 }
 

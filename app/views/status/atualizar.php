@@ -15,8 +15,10 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   <select name="novo_status" required>
     <option value="">Selecione</option>
     <option value="Aguardando">Aguardando</option>
+    <option value="Em andamento">Em andamento</option>
     <option value="Resgatado">Resgatado</option>
     <option value="Adoção">Adoção</option>
+    <option value="Finalizado">Finalizado</option>
   </select>
 
   <br><br>

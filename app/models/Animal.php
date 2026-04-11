@@ -34,7 +34,7 @@ final class Animal extends Model
     public function buscarDonoId(string $animalId): ?string
     {
         $sql = "SELECT criado_por FROM animais_reportados WHERE id = :id LIMIT 1";
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->execute([':id' => $animalId]);
 
         $donoId = $stmt->fetchColumn();
@@ -56,7 +56,7 @@ final class Animal extends Model
                     VALUES
                     (:id, :criado_por, :titulo, :foto, :descricao, :especie, :cor, :condicao, :localizacao, 'Aguardando')";
 
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->prepare($sql);
 
             $stmt->bindValue(':id', $id, PDO::PARAM_STR);
             $stmt->bindValue(':criado_por', (string)($dados['usuario_id'] ?? ''), PDO::PARAM_STR);
@@ -120,7 +120,7 @@ final class Animal extends Model
 
         $sql = "INSERT INTO animais_reportados_imagens (id, animal_id, caminho, ordem)
                 VALUES (:id, :animal_id, :caminho, :ordem)";
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepare($sql);
 
         $ordem = 1;
         foreach ($paths as $p) {
@@ -163,7 +163,7 @@ final class Animal extends Model
             $params[':status'] = $status;
         }
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->prepare($sql);
         $stmt->execute($params);
         return (int)$stmt->fetchColumn();
     }
@@ -200,7 +200,16 @@ final class Animal extends Model
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        // Garantir que cada denúncia tenha um título
+        foreach ($results as &$row) {
+            if (empty(trim((string)($row['titulo'] ?? '')))) {
+                $row['titulo'] = (string)($row['especie'] ?? 'Animal');
+            }
+        }
+
+        return $results;
     }
 
 
@@ -210,7 +219,7 @@ final class Animal extends Model
             $this->db->beginTransaction();
 
             // 1) Buscar caminhos das imagens
-            $stmt = $this->db->prepare("SELECT caminho FROM animais_reportados_imagens WHERE animal_id = :id");
+            $stmt = $this->prepare("SELECT caminho FROM animais_reportados_imagens WHERE animal_id = :id");
             $stmt->execute([':id' => $animalId]);
             $caminhos = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -264,6 +273,9 @@ final class Animal extends Model
         $stmt->execute([':id' => $id]);
 
         $row = $stmt->fetch();
+        if ($row && empty(trim((string)($row['titulo'] ?? '')))) {
+            $row['titulo'] = (string)($row['especie'] ?? 'Animal');
+        }
         return $row ?: null;
     }
 
@@ -280,12 +292,14 @@ final class Animal extends Model
                 ':animal_id'   => $animalId,
             ]);
 
+            $historicopId = UuidHelper::generateStandard();
             $sql = "INSERT INTO historico_status
-                    (animal_id, status_anterior, novo_status, atualizado_por)
+                    (id, animal_id, status_anterior, novo_status, atualizado_por)
                     VALUES
-                    (:animal_id, :status_anterior, :novo_status, :usuario_id)";
+                    (:id, :animal_id, :status_anterior, :novo_status, :usuario_id)";
             $stmt = $this->prepare($sql);
             $stmt->execute([
+                ':id'              => $historicopId,
                 ':animal_id'       => $animalId,
                 ':status_anterior' => $statusAnterior,
                 ':novo_status'     => $novoStatus,
@@ -296,6 +310,7 @@ final class Animal extends Model
             return true;
         } catch (\Throwable $e) {
             $this->rollBack();
+            error_log("ERROR in atualizarStatusComHistorico: " . $e->getMessage());
             return false;
         }
     }
@@ -315,14 +330,23 @@ final class Animal extends Model
     public function listarPorAutor(string $usuarioId): array
     {
         $autorColuna = $this->obterColunaAutorView();
-        $sql = "SELECT id, foto, descricao, especie, cor, condicao, status, data_hora, localizacao,
+        $sql = "SELECT id, titulo, foto, descricao, especie, cor, condicao, status, data_hora, localizacao,
                     total_comentarios
                 FROM vw_denuncias_completas
                 WHERE {$autorColuna} = :uid
                 ORDER BY data_hora DESC";
         $stmt = $this->prepare($sql);
         $stmt->execute([':uid' => $usuarioId]);
-        return $stmt->fetchAll() ?: [];
+        $results = $stmt->fetchAll() ?: [];
+
+        // Garantir que cada denúncia tenha um título
+        foreach ($results as &$row) {
+            if (empty(trim((string)($row['titulo'] ?? '')))) {
+                $row['titulo'] = (string)($row['especie'] ?? 'Animal');
+            }
+        }
+
+        return $results;
     }
 
     private function obterColunaAutorView(): string

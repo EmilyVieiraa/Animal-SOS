@@ -29,9 +29,9 @@ final class UsuarioController extends Controller
                 $novaSenha  = (string)($_POST['nova_senha'] ?? '');
                 $confirmar  = (string)($_POST['confirmar_senha'] ?? '');
 
-                if ($novaSenha === '' || strlen($novaSenha) < 6) {
+                if ($novaSenha === '' || strlen($novaSenha) < 8) {
                     $this->view('configuracoes/senha', [
-                        'erro' => 'A nova senha deve ter no mínimo 6 caracteres.',
+                        'erro' => 'A nova senha deve ter no mínimo 8 caracteres.',
                     ]);
                     return;
                 }

@@ -14,7 +14,7 @@ $cor       = (string)($animal['cor'] ?? '—');
 $local     = (string)($animal['localizacao'] ?? '—');
 
 $status    = (string)($animal['status'] ?? 'Aguardando');
-$dataHora  = (string)($animal['data_hora'] ?? '');
+$dataHora  = formatDateTime((string)($animal['data_hora'] ?? ''));
 $autorNome = (string)($animal['usuario_nome'] ?? '—');
 $autorId   = (string)($animal['criado_por'] ?? '');
 
@@ -31,9 +31,9 @@ $canUpdateStatus = in_array($tipoUsuario, ['ONG', 'Autoridade', 'Admin'], true);
 
 $statusOptions = [];
 if ($tipoUsuario === 'ONG') {
-  $statusOptions = ['Adoção', 'Resgatado'];
+  $statusOptions = ['Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
 } elseif (in_array($tipoUsuario, ['Autoridade', 'Admin'], true)) {
-  $statusOptions = ['Aguardando', 'Adoção', 'Resgatado'];
+  $statusOptions = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
 }
 
 /**
@@ -115,7 +115,7 @@ $returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['i
         <?php endif; ?>
 
         <!-- STATUS + REGISTRADO EM + AUTOR -->
-        <div class="den-meta den-meta--row den-meta--triple">
+        <div class="den-meta den-meta--triple">
           <div class="den-meta__item">
             <span class="den-meta__label">Status</span>
             <span class="den-meta__value"><?= h($status) ?></span>
@@ -133,6 +133,7 @@ $returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['i
               <a
                 href="<?= BASE_URL ?>/index.php?c=usuario&a=perfil&id=<?= h($autorId) ?>"
                 class="den-meta__value den-meta__link"
+                title="<?= h($autorNome) ?>"
               >
                 <?= h($autorNome) ?>
               </a>
@@ -227,7 +228,7 @@ $returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['i
 
                   <div class="den-item__body den-item__body--muted">
                     Por <?= h($hItem['atualizado_por_nome'] ?? '') ?>
-                    em <?= h($hItem['data_hora'] ?? '') ?>
+                    em <?= h(formatDateTime((string)($hItem['data_hora'] ?? ''))) ?>
                   </div>
                 </div>
               <?php endforeach; ?>
@@ -249,7 +250,7 @@ $returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['i
                 <div class="den-item">
                   <div class="den-item__top">
                     <strong><?= h($c['usuario_nome'] ?? 'Usuário') ?></strong>
-                    <span class="den-item__date"><?= h($c['data_hora'] ?? '') ?></span>
+                    <span class="den-item__date"><?= h(formatDateTime((string)($c['data_hora'] ?? ''))) ?></span>
                   </div>
                   <div class="den-item__body">
                     <?= nl2br(h($c['mensagem'] ?? '')) ?>

@@ -3,26 +3,40 @@ declare(strict_types=1);
 function h($v): string { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 ?>
 
-<h1>Redefinir senha</h1>
+<div class="forgot-page">
 
-<?php if (!empty($erro)): ?>
-  <p style="color:red;"><?= h($erro) ?></p>
-<?php endif; ?>
+  <main class="forgot-container">
+    <h1>Redefinir Senha</h1>
 
-<?php if (!empty($token)): ?>
-  <form method="post" action="<?= BASE_URL ?>/index.php?c=auth&a=salvarNovaSenha">
-    <input type="hidden" name="token" value="<?= h($token) ?>">
+    <?php if (!empty($erro)): ?>
+      <p class="msg msg-error"><?= h($erro) ?></p>
+    <?php endif; ?>
 
-    <label>Nova senha</label><br>
-    <input type="password" name="senha" required><br><br>
+    <?php if (!empty($token)): ?>
+      <p class="forgot-subtitle">Defina uma nova senha para sua conta.</p>
 
-    <label>Confirmar nova senha</label><br>
-    <input type="password" name="senha_confirmacao" required><br><br>
+      <form method="post" action="<?= BASE_URL ?>/index.php?c=auth&a=salvarNovaSenha" class="forgot-form">
+        <input type="hidden" name="token" value="<?= h($token) ?>">
 
-    <button type="submit">Salvar</button>
-  </form>
-<?php endif; ?>
+        <div>
+          <label for="senha">Nova Senha</label><br>
+          <input id="senha" type="password" name="senha" minlength="8" required>
+        </div>
 
-<p style="margin-top:12px;">
-  <a href="<?= BASE_URL ?>/login">Voltar ao login</a>
-</p>
+        <div>
+          <label for="senha_confirmacao">Confirmar Senha</label><br>
+          <input id="senha_confirmacao" type="password" name="senha_confirmacao" minlength="8" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar Nova Senha</button>
+      </form>
+    <?php else: ?>
+      <p class="msg msg-error">Token inválido ou expirado. <a href="<?= BASE_URL ?>/index.php?c=auth&a=esqueciSenha">Solicitar novo link</a></p>
+    <?php endif; ?>
+
+    <p class="forgot-actions">
+      <a href="<?= BASE_URL ?>/index.php?c=auth&a=login">Voltar para login</a>
+    </p>
+  </main>
+
+</div>

@@ -9,7 +9,7 @@ final class AnimalController extends Controller
     private Comentario $comentarioModel;
     private Status $statusModel;
 
-    private const STATUS_VALIDOS = ['Aguardando', 'Adoção', 'Resgatado'];
+    private const STATUS_VALIDOS = ['Aguardando', 'Em andamento', 'Resgatado', 'Adoção', 'Finalizado'];
 
     /**
      * Regras de transição por papel.
@@ -17,9 +17,9 @@ final class AnimalController extends Controller
      */
     private const STATUS_POR_PAPEL = [
         'Comum'      => [],
-        'ONG'        => ['Adoção', 'Resgatado'],      // com restrição de responsável
-        'Autoridade' => ['Aguardando', 'Adoção', 'Resgatado'],
-        'Admin'      => ['Aguardando', 'Adoção', 'Resgatado'],
+        'ONG'        => ['Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
+        'Autoridade' => ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
+        'Admin'      => ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
     ];
 
     /**
@@ -499,11 +499,11 @@ final class AnimalController extends Controller
         // Regra por tipo de usuário (à prova de UI)
         $permitidos = [];
         if ($tipoUsuario === 'ONG') {
-            $permitidos = ['Adoção', 'Resgatado'];
+            $permitidos = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
         } elseif ($tipoUsuario === 'Autoridade') {
-            $permitidos = ['Aguardando', 'Adoção', 'Resgatado'];
+            $permitidos = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
         } elseif ($tipoUsuario === 'Admin') {
-            $permitidos = ['Aguardando', 'Adoção', 'Resgatado'];
+            $permitidos = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
         } else {
             // Comum (e qualquer outro)
             $_SESSION['flash_error'] = 'Você não tem permissão para alterar o status.';

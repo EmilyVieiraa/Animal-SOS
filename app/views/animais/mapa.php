@@ -16,8 +16,10 @@ function h($v): string { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'
   <select name="status" id="status">
     <option value="" <?= $sel === '' ? 'selected' : '' ?>>Todos</option>
     <option value="Aguardando" <?= $sel === 'Aguardando' ? 'selected' : '' ?>>Aguardando</option>
+    <option value="Em andamento" <?= $sel === 'Em andamento' ? 'selected' : '' ?>>Em andamento</option>
     <option value="Resgatado" <?= $sel === 'Resgatado' ? 'selected' : '' ?>>Resgatado</option>
     <option value="Adoção" <?= $sel === 'Adoção' ? 'selected' : '' ?>>Adoção</option>
+    <option value="Finalizado" <?= $sel === 'Finalizado' ? 'selected' : '' ?>>Finalizado</option>
   </select>
 
   <button type="submit">Aplicar</button>

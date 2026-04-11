@@ -453,9 +453,9 @@ final class AuthController extends Controller
             return;
         }
 
-        if (strlen($senha) < 6) {
+        if (strlen($senha) < 8) {
             $this->view('auth/redefinir_senha', [
-                'erro'  => 'A senha deve ter no mínimo 6 caracteres.',
+                'erro'  => 'A senha deve ter no mínimo 8 caracteres.',
                 'token' => $token,
             ]);
             return;

@@ -27,13 +27,13 @@
     </div>
 
 <form method="post">
-    <label>Nome</label><br>
+    <label>Nome <span style="color:red;">*</span></label><br>
     <input type="text" name="nome" required><br><br>
 
-    <label>E-mail</label><br>
+    <label>E-mail <span style="color:red;">*</span></label><br>
     <input type="email" name="email" required><br><br>
 
-    <label>Senha</label><br>
+    <label>Senha <span style="color:red;">*</span></label><br>
     <input
     type="password"
     name="senha"

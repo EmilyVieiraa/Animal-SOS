@@ -1,5 +1,5 @@
 <?php
-$basePath = '/animalSOS/public';
+$basePath = '';
 $logado = !empty($_SESSION['usuario_id']);
 ?>
 <!DOCTYPE html>
@@ -10,6 +10,8 @@ $logado = !empty($_SESSION['usuario_id']);
   <title><?= htmlspecialchars($title ?? 'Animal SOS', ENT_QUOTES, 'UTF-8') ?></title>
 
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=3">
+
+  <link rel="icon" href="<?= BASE_URL ?>/assets/img/img_logo.png" type="image/png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +41,7 @@ $logado = !empty($_SESSION['usuario_id']);
       <div class="auth-buttons">
         <?php if ($logado): ?>
 
-          <a class="profile-chip" href="<?= BASE_URL ?>/index.php?c=usuario&a=meuPerfil"
+          <a class="profile-chip" href="<?= BASE_URL ?>/index.php?c=usuario&a=meuPerfil">
             <span class="profile-text">Meu Perfil</span>
           </a>
 

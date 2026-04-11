@@ -10,12 +10,6 @@ $openModal = $_SESSION['open_modal'] ?? '';
   </div>
 <?php unset($_SESSION['flash_success']); endif; ?>
 
-<?php if (!empty($_SESSION['flash_error'])): ?>
-  <div class="alert alert-error">
-    <?= htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES, 'UTF-8') ?>
-  </div>
-<?php unset($_SESSION['flash_error']); endif; ?>
-
 <!-- toggles só na HOME -->
 <input type="checkbox" id="loginToggle" hidden <?= ($openModal === 'login') ? 'checked' : '' ?>>
 <input type="checkbox" id="cadastroToggle" hidden <?= ($openModal === 'cadastro') ? 'checked' : '' ?>>
@@ -54,6 +48,13 @@ $openModal = $_SESSION['open_modal'] ?? '';
 
     <h2>Fazer Login</h2>
     <p>Entre com seu email e senha para acessar sua conta.</p>
+
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+      <div class="alert alert-error">
+        <?= htmlspecialchars($_SESSION['flash_error']) ?>
+      </div>
+      <?php unset($_SESSION['flash_error']); ?>
+    <?php endif; ?>
 
     <form action="<?= BASE_URL ?>/index.php?c=auth&a=login" method="post">
       <div class="field">
@@ -123,12 +124,12 @@ $openModal = $_SESSION['open_modal'] ?? '';
       </div>
 
       <div class="form-group">
-        <label for="cad_nome">Nome Completo</label>
+        <label for="cad_nome">Nome Completo <span style="color:red;">*</span></label>
         <input type="text" id="cad_nome" name="nome" placeholder="Seu nome" required maxlength="255">
       </div>
 
       <div class="form-group">
-        <label for="cad_email">E-mail</label>
+        <label for="cad_email">E-mail <span style="color:red;">*</span></label>
         <input type="email" id="cad_email" name="email" placeholder="seu@email.com" required maxlength="255">
       </div>
 
@@ -211,7 +212,7 @@ $openModal = $_SESSION['open_modal'] ?? '';
       </div>
 
       <div class="form-group">
-        <label for="cad_senha">Senha</label>
+        <label for="cad_senha">Senha <span style="color:red;">*</span></label>
         <input type="password" id="cad_senha" name="senha" placeholder="Crie uma senha segura" required>
         <p class="helper-text">Sua senha será criptografada.</p>
       </div>

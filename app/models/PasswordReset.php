@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../helpers/UuidHelper.php';
+
 final class PasswordReset extends Model
 {
     /**
@@ -14,12 +16,14 @@ final class PasswordReset extends Model
         ?string $ip = null,
         ?string $userAgent = null
     ): bool {
-        $sql = "INSERT INTO password_resets (usuario_id, token_hash, expira_em)
-                VALUES (:usuario_id, :token_hash, :expira_em)";
+        $resetId = UuidHelper::generateStandard();
+        $sql = "INSERT INTO password_resets (id, usuario_id, token_hash, expira_em)
+                VALUES (:id, :usuario_id, :token_hash, :expira_em)";
 
         $stmt = $this->prepare($sql);
 
         return $stmt->execute([
+            ':id'          => $resetId,
             ':usuario_id' => $usuarioId,
             ':token_hash' => $tokenHash,
             ':expira_em'  => $expiraEm,
