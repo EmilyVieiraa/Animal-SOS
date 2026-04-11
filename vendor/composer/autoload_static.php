@@ -6,7 +6,16 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit2185d2f99bcd56787481d9357a5972d3
 {
+    public static $files = array (
+        '09f6b20656683369174dd6fa83b7e5fb' => __DIR__ . '/..' . '/symfony/polyfill-uuid/bootstrap.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
+        'S' =>
+        array (
+            'Symfony\\Polyfill\\Uuid\\' => 22,
+            'Symfony\\Component\\Uid\\' => 22,
+        ),
         'P' =>
         array (
             'PHPMailer\\PHPMailer\\' => 20,
@@ -14,6 +23,14 @@ class ComposerStaticInit2185d2f99bcd56787481d9357a5972d3
     );
 
     public static $prefixDirsPsr4 = array (
+        'Symfony\\Polyfill\\Uuid\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-uuid',
+        ),
+        'Symfony\\Component\\Uid\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/uid',
+        ),
         'PHPMailer\\PHPMailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',

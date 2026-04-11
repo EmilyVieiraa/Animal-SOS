@@ -9,7 +9,7 @@ $logado = !empty($_SESSION['usuario_id']);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($title ?? 'Animal SOS', ENT_QUOTES, 'UTF-8') ?></title>
 
-  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=1">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=3">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,20 +38,8 @@ $logado = !empty($_SESSION['usuario_id']);
     <div class="header-actions">
       <div class="auth-buttons">
         <?php if ($logado): ?>
-          <?php
-            $nome = trim((string)($_SESSION['usuario_nome'] ?? ''));
-            $iniciais = 'U';
-            if ($nome !== '') {
-              $partes = preg_split('/\s+/', $nome);
-              $iniciais = strtoupper(mb_substr($partes[0], 0, 1, 'UTF-8'));
-              if (count($partes) > 1) {
-                $iniciais .= strtoupper(mb_substr($partes[count($partes)-1], 0, 1, 'UTF-8'));
-              }
-            }
-          ?>
 
           <a class="profile-chip" href="<?= BASE_URL ?>/index.php?c=usuario&a=meuPerfil"
-            <span class="profile-avatar"><?= htmlspecialchars($iniciais, ENT_QUOTES, 'UTF-8') ?></span>
             <span class="profile-text">Meu Perfil</span>
           </a>
 
@@ -77,4 +65,4 @@ $logado = !empty($_SESSION['usuario_id']);
   </div>
 </header>
 
-<main class="container">
+<main>

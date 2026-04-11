@@ -36,6 +36,20 @@ if (!function_exists('condicaoBadgeClassUI')) {
     }
 }
 
+// Normaliza caminho da imagem para URL pública
+function publicImgUrl(string $path): string {
+    $path = trim($path);
+    if ($path === '') return '';
+
+    // Se já for URL absoluta, retorna como está
+    if (preg_match('~^https?://~i', $path)) return $path;
+
+    // Remove barras duplicadas
+    $path = ltrim($path, '/');
+
+    // Garante BASE_URL + / + path
+    return BASE_URL . '/' . $path;
+}
 // Gera iniciais para avatar
 function initials(string $name): string {
     $name = trim($name);
@@ -44,4 +58,14 @@ function initials(string $name): string {
     $a = strtoupper(mb_substr($parts[0] ?? 'U', 0, 1));
     $b = strtoupper(mb_substr($parts[1] ?? ($parts[0] ?? 'S'), 0, 1));
     return $a . $b;
+}
+
+function pageUrl(int $p, string $status): string {
+    $q = [
+        'c' => 'animal',
+        'a' => 'listar',
+        'p' => $p,
+    ];
+    if ($status !== '') $q['status'] = $status;
+    return BASE_URL . '/index.php?' . http_build_query($q);
 }

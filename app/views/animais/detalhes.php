@@ -16,7 +16,7 @@ $local     = (string)($animal['localizacao'] ?? '—');
 $status    = (string)($animal['status'] ?? 'Aguardando');
 $dataHora  = (string)($animal['data_hora'] ?? '');
 $autorNome = (string)($animal['usuario_nome'] ?? '—');
-$autorId   = (string)($animal['usuario_id'] ?? '');
+$autorId   = (string)($animal['criado_por'] ?? '');
 
 /**
  * Sessão (padronizada conforme seu AuthController)

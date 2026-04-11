@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 final class Animal extends Model
 {
+    private ?string $autorColunaView = null;
+
     /**
      * Lista todas as denúncias de animais reportados.
      * Se $status for fornecido, filtra por status.
@@ -31,7 +33,7 @@ final class Animal extends Model
      */
     public function buscarDonoId(string $animalId): ?string
     {
-        $sql = "SELECT usuario_id FROM animais_reportados WHERE id = :id LIMIT 1";
+        $sql = "SELECT criado_por FROM animais_reportados WHERE id = :id LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $animalId]);
 
@@ -42,21 +44,22 @@ final class Animal extends Model
     /**
      * Cria uma denúncia em animais_reportados.
      * Retorna o ID (UUID) criado ou null em caso de falha.
-        */
+     * UUID gerado via UuidHelper::generateStandard() - garantia de unicidade e segurança.
+     */
     public function criar(array $dados): ?string
     {
         try {
-            $id = bin2hex(random_bytes(16)); // 32 chars
+            $id = UuidHelper::generateStandard(); // Gera UUID v4 via Symfony/uid (36 chars com hífens)
 
             $sql = "INSERT INTO animais_reportados
-                    (id, usuario_id, titulo, foto, descricao, especie, cor, condicao, localizacao, status)
+                    (id, criado_por, titulo, foto, descricao, especie, cor, condicao, localizacao, status)
                     VALUES
-                    (:id, :usuario_id, :titulo, :foto, :descricao, :especie, :cor, :condicao, :localizacao, 'Aguardando')";
+                    (:id, :criado_por, :titulo, :foto, :descricao, :especie, :cor, :condicao, :localizacao, 'Aguardando')";
 
             $stmt = $this->db->prepare($sql);
 
             $stmt->bindValue(':id', $id, PDO::PARAM_STR);
-            $stmt->bindValue(':usuario_id', (string)($dados['usuario_id'] ?? ''), PDO::PARAM_STR);
+            $stmt->bindValue(':criado_por', (string)($dados['usuario_id'] ?? ''), PDO::PARAM_STR);
 
             // IMPORTANTE: título deve ser string (evita NULL e campo vazio por falha de bind)
             $titulo = trim((string)($dados['titulo'] ?? ''));
@@ -121,7 +124,7 @@ final class Animal extends Model
 
         $ordem = 1;
         foreach ($paths as $p) {
-            $imgId = bin2hex(random_bytes(16)); // 32 chars igual ao id do animal
+            $imgId = UuidHelper::generateStandard(); // Gera UUID v4 via Symfony/uid (36 chars com hífens)
 
             $stmt->execute([
                 ':id'        => $imgId,
@@ -175,7 +178,7 @@ final class Animal extends Model
             ar.*,
             u.nome AS usuario_nome
         FROM animais_reportados ar
-        LEFT JOIN usuarios u ON u.id = ar.usuario_id
+        LEFT JOIN usuarios u ON u.id = ar.criado_por
         ";
 
         $params = [];
@@ -252,7 +255,7 @@ final class Animal extends Model
                 u.telefone AS usuario_telefone,
                 u.tipo_usuario
             FROM animais_reportados a
-            INNER JOIN usuarios u ON u.id = a.usuario_id
+            INNER JOIN usuarios u ON u.id = a.criado_por
             WHERE a.id = :id
             LIMIT 1
         ";
@@ -295,6 +298,55 @@ final class Animal extends Model
             $this->rollBack();
             return false;
         }
+    }
+
+    public function contarPorAutor(string $usuarioId): int
+    {
+        $autorColuna = $this->obterColunaAutorView();
+        $sql = "SELECT COUNT(*) AS total
+                FROM vw_denuncias_completas
+            WHERE {$autorColuna} = :uid";
+        $stmt = $this->prepare($sql);
+        $stmt->execute([':uid' => $usuarioId]);
+        $row = $stmt->fetch();
+        return (int)($row['total'] ?? 0);
+    }
+
+    public function listarPorAutor(string $usuarioId): array
+    {
+        $autorColuna = $this->obterColunaAutorView();
+        $sql = "SELECT id, foto, descricao, especie, cor, condicao, status, data_hora, localizacao,
+                    total_comentarios
+                FROM vw_denuncias_completas
+                WHERE {$autorColuna} = :uid
+                ORDER BY data_hora DESC";
+        $stmt = $this->prepare($sql);
+        $stmt->execute([':uid' => $usuarioId]);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    private function obterColunaAutorView(): string
+    {
+        if ($this->autorColunaView !== null) {
+            return $this->autorColunaView;
+        }
+
+        try {
+            $stmt = $this->query("SHOW COLUMNS FROM vw_denuncias_completas");
+            $colunas = $stmt->fetchAll(PDO::FETCH_COLUMN, 0) ?: [];
+
+            if (in_array('usuario_id', $colunas, true)) {
+                return $this->autorColunaView = 'usuario_id';
+            }
+
+            if (in_array('criado_por', $colunas, true)) {
+                return $this->autorColunaView = 'criado_por';
+            }
+        } catch (\Throwable $e) {
+            // fallback para manter comportamento legado
+        }
+
+        return $this->autorColunaView = 'usuario_id';
     }
 
 }

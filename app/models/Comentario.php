@@ -29,6 +29,7 @@ final class Comentario extends Model
 
     /**
      * Cria comentário.
+     * UUID gerado via UuidHelper::generateStandard() - garantia de unicidade e segurança.
      */
     public function criar(array $dados): bool
     {
@@ -38,7 +39,7 @@ final class Comentario extends Model
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
-            ':id'        => bin2hex(random_bytes(16)),
+            ':id'        => UuidHelper::generateStandard(),
             ':animal_id' => (string)$dados['animal_id'],
             ':usuario_id'=> (string)$dados['usuario_id'],
             ':mensagem'  => (string)$dados['mensagem'],

@@ -33,22 +33,27 @@ final class Usuario extends Model
 
     /**
      * Cria usuário (cadastro).
-     * Ajuste os campos conforme o seu controller/form.
+     * Gera UUID automaticamente via UuidHelper::generateStandard()
+     * Retorna true se bem-sucedido, false caso contrário.
      */
     public function criar(array $dados): bool
     {
+        // Gera o UUID uma única vez e reutiliza (formato padrão: 36 chars com hífens)
+        $usuarioId = UuidHelper::generateStandard();
+
         $sql = "INSERT INTO usuarios (
-            nome, email, senha_hash, telefone, tipo_usuario,
+            id, nome, email, senha_hash, telefone, tipo_usuario,
             foto_perfil, cep, bairro, rua, numero, cidade, estado, ativo
         )
         VALUES (
-            :nome, :email, :senha_hash, :telefone, :tipo_usuario,
+            :id, :nome, :email, :senha_hash, :telefone, :tipo_usuario,
             :foto_perfil, :cep, :bairro, :rua, :numero, :cidade, :estado, TRUE
         )";
 
         $stmt = $this->prepare($sql);
 
         return $stmt->execute([
+            ':id'           => $usuarioId,
             ':nome'         => $dados['nome'],
             ':email'        => $dados['email'],
             ':senha_hash'   => password_hash((string)$dados['senha'], PASSWORD_DEFAULT),
@@ -68,21 +73,37 @@ final class Usuario extends Model
     }
 
     /**
-     * Atualiza dados de perfil (ex.: nome/telefone).
+     * Atualiza dados de perfil (ex.: nome/telefone/endereço).
      */
     public function atualizarPerfil(string $id, array $dados): bool
     {
         $sql = "UPDATE usuarios
-                   SET nome = :nome,
-                       telefone = :telefone
-                 WHERE id = :id";
+                SET nome = :nome,
+                    telefone = :telefone,
+                    rua = :rua,
+                    numero = :numero,
+                    bairro = :bairro,
+                    cidade = :cidade,
+                    estado = :estado,
+                    cep = :cep,
+                    mostrar_email = :mostrar_email,
+                    mostrar_whatsapp = :mostrar_whatsapp
+                WHERE id = :id";
 
         $stmt = $this->prepare($sql);
 
         return $stmt->execute([
-            ':nome'     => $dados['nome'],
-            ':telefone' => $dados['telefone'] ?? null,
-            ':id'       => $id,
+            ':nome'             => $dados['nome'],
+            ':telefone'         => $dados['telefone'] ?? null,
+            ':rua'              => $dados['rua'] ?? null,
+            ':numero'           => $dados['numero'] ?? null,
+            ':bairro'           => $dados['bairro'] ?? null,
+            ':cidade'           => $dados['cidade'] ?? null,
+            ':estado'           => $dados['estado'] ?? null,
+            ':cep'              => $dados['cep'] ?? null,
+            ':mostrar_email'    => (int)($dados['mostrar_email'] ?? 0),
+            ':mostrar_whatsapp' => (int)($dados['mostrar_whatsapp'] ?? 0),
+            ':id'               => $id,
         ]);
     }
 
