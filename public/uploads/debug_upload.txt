@@ -639,3 +639,136 @@ MOVE 0: ok=1 dest=C:\xampp\htdocs\AnimalSOS/public/uploads/animais/92a3c260a6f52
 
 SEM ARQUIVOS: $files vazio após normalização.
 
+{
+    "time": "2026-04-11T18:02:32-03:00",
+    "field": "fotos",
+    "uploadDir": "C:\\xampp\\htdocs\\AnimalSOS/public/uploads/animais",
+    "is_dir(uploadDir)": true,
+    "is_writable(uploadDir)": true,
+    "ini": {
+        "file_uploads": "1",
+        "upload_max_filesize": "40M",
+        "post_max_size": "40M",
+        "max_file_uploads": "20",
+        "upload_tmp_dir": "C:\\xampp\\tmp"
+    },
+    "_FILES_keys": [
+        "fotos"
+    ],
+    "_FILES_field": {
+        "name": [
+            ""
+        ],
+        "full_path": [
+            ""
+        ],
+        "type": [
+            ""
+        ],
+        "tmp_name": [
+            ""
+        ],
+        "error": [
+            4
+        ],
+        "size": [
+            0
+        ]
+    },
+    "after_mkdir_is_dir": true,
+    "after_mkdir_is_writable": true
+}
+
+SEM ARQUIVOS: array vazio após normalização.
+
+{
+    "time": "2026-04-11T18:03:36-03:00",
+    "field": "fotos",
+    "uploadDir": "C:\\xampp\\htdocs\\AnimalSOS/public/uploads/animais",
+    "is_dir(uploadDir)": true,
+    "is_writable(uploadDir)": true,
+    "ini": {
+        "file_uploads": "1",
+        "upload_max_filesize": "40M",
+        "post_max_size": "40M",
+        "max_file_uploads": "20",
+        "upload_tmp_dir": "C:\\xampp\\tmp"
+    },
+    "_FILES_keys": [
+        "fotos"
+    ],
+    "_FILES_field": {
+        "name": [
+            "Captura de tela 2026-04-11 180316.png"
+        ],
+        "full_path": [
+            "Captura de tela 2026-04-11 180316.png"
+        ],
+        "type": [
+            "image/png"
+        ],
+        "tmp_name": [
+            "C:\\xampp\\tmp\\php55F9.tmp"
+        ],
+        "error": [
+            0
+        ],
+        "size": [
+            42481
+        ]
+    },
+    "after_mkdir_is_dir": true,
+    "after_mkdir_is_writable": true
+}
+
+ARQUIVO 0: {
+    "name": "Captura de tela 2026-04-11 180316.png",
+    "size": 42481,
+    "error": 0,
+    "tmp_name": "C:\\xampp\\tmp\\php55F9.tmp",
+    "is_uploaded_file": true
+}
+MOVE 0: ok=1 dest=C:\xampp\htdocs\AnimalSOS/public/uploads/animais/78604c7c5f0d3d8e4a08eace74ef675e.png
+
+{
+    "time": "2026-04-13T16:25:44-03:00",
+    "field": "fotos",
+    "uploadDir": "C:\\xampp\\htdocs\\AnimalSOS/public/uploads/animais",
+    "is_dir(uploadDir)": true,
+    "is_writable(uploadDir)": true,
+    "ini": {
+        "file_uploads": "1",
+        "upload_max_filesize": "40M",
+        "post_max_size": "40M",
+        "max_file_uploads": "20",
+        "upload_tmp_dir": "C:\\xampp\\tmp"
+    },
+    "_FILES_keys": [
+        "fotos"
+    ],
+    "_FILES_field": {
+        "name": [
+            ""
+        ],
+        "full_path": [
+            ""
+        ],
+        "type": [
+            ""
+        ],
+        "tmp_name": [
+            ""
+        ],
+        "error": [
+            4
+        ],
+        "size": [
+            0
+        ]
+    },
+    "after_mkdir_is_dir": true,
+    "after_mkdir_is_writable": true
+}
+
+SEM ARQUIVOS: array vazio após normalização.
+

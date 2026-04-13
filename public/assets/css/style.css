@@ -1000,23 +1000,23 @@ body:has(#cadastroToggle:checked){
   word-break: break-all;
 }
 
-/* ======================
-   LISTAGEM (DENÚNCIAS) 
-========================*/
-.catalog-hero{
+/* ==================================================
+  MÓDULO DE DENÚNCIAS - LISTAGEM
+================================================== */
+.denuncia-listagem__cabecalho{
   text-align: center;
   padding: 28px 0 18px;
 }
 
-.catalog-title{
+.denuncia-listagem__titulo{
   font-family: var(--font-title);
-  font-weight: 400;      /* DM Serif funciona melhor em 400 */
+  font-weight: 400;      
   margin: 0;
-  letter-spacing: .3px; /* leve refinamento */
+  letter-spacing: .3px; 
   color: var(--animal-primary);
 }
 
-.catalog-subtitle{
+.denuncia-listagem__subtitulo{
   margin: 10px auto 0;
   max-width: 760px;
   opacity: .75;
@@ -1024,6 +1024,7 @@ body:has(#cadastroToggle:checked){
   color: var(--animal-primary);
 }
 
+/* Ações dos cards */
 .btn-ui{
   display: inline-flex;
   align-items: center;
@@ -1038,21 +1039,29 @@ body:has(#cadastroToggle:checked){
   flex-shrink: 0;
 }
 
-.catalog-grid{
+.btn-ui-ghost{
+  background: #fff;
+  color: var(--animal-primary);
+}
+
+.btn-ui-ghost:hover{
+  background: rgba(122,79,50,.08);
+}
+
+.btn-ui.disabled,
+.btn-ui[aria-disabled="true"]{
+  pointer-events: none;
+  opacity: .45;
+}
+
+.denuncia-listagem__grade{
   margin: 18px 0 26px;
   display: grid;
   grid-template-columns: repeat(3, minmax(280px, 1fr));
   gap: 22px;
 }
 
-@media (max-width: 1100px){
-  .catalog-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 720px){
-  .catalog-grid{ grid-template-columns: 1fr; }
-}
-
-.item-card{
+.denuncia-card{
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 18px;
   overflow: hidden;
@@ -1060,13 +1069,18 @@ body:has(#cadastroToggle:checked){
   box-shadow: 0 6px 20px rgba(0,0,0,.06);
 }
 
+.denuncia-card--grande .denuncia-card__midia img,
+.denuncia-card--grande .denuncia-card__placeholder{
+  height: 320px;
+}
+
 /* ---------- Imagem ---------- */
-.item-media{
+.denuncia-card__midia{
   display: block;
   background: #f4f1ee;
 }
 
-.item-media img{
+.denuncia-card__midia img{
   width: 100%;
   height: 260px;
   object-fit: cover;
@@ -1074,7 +1088,7 @@ body:has(#cadastroToggle:checked){
 }
 
 /* Placeholder quando não tem foto */
-.item-placeholder{
+.denuncia-card__placeholder{
   height: 260px;
   display: flex;
   flex-direction: column;
@@ -1084,12 +1098,15 @@ body:has(#cadastroToggle:checked){
   opacity: .7;
 }
 
+.denuncia-card__placeholder-icone{ font-size: 24px; }
+.denuncia-card__placeholder-texto{ font-size: 13px; }
+
 /* ---------- Conteúdo do card ---------- */
-.item-body{
+.denuncia-card__corpo{
   padding: 18px;
 }
 
-.item-title{
+.denuncia-card__titulo{
   margin: 0;
   font-family: var(--font-title);
   font-size: 20px;
@@ -1098,13 +1115,13 @@ body:has(#cadastroToggle:checked){
   color: var(--animal-primary);
 }
 
-.item-title a{
+.denuncia-card__titulo a{
   font-family: var(--font-title);
   text-decoration: none;
   color: inherit;
 }
 
-.item-tags{
+.denuncia-card__etiquetas{
   margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
@@ -1131,7 +1148,7 @@ body:has(#cadastroToggle:checked){
 .tag-warn{ background: #FFE3E3; color: #B42323; }
 .tag-info{ background: rgba(138,182,255,.25); color: #1d4ed8; }
 
-.item-description{
+.denuncia-card__descricao{
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 12px;
@@ -1139,7 +1156,7 @@ body:has(#cadastroToggle:checked){
 
   font-size: 12.5px;
   line-height: 1.45;
-  color: rgba(122,79,50,.85); ;
+  color: rgba(122,79,50,.85);
 
   /* limita em 2 linhas (fica elegante) */
   display: -webkit-box;
@@ -1150,10 +1167,10 @@ body:has(#cadastroToggle:checked){
 }
 
 /*Campo regitrado em*/
-.item-desc{
+.denuncia-card__registro{
   margin-top: 8px;
-  font-size: 12.5px;              /* menor que descrição */
-  color: rgba(122,79,50,.85); ;         /* bem discreto */
+  font-size: 12.5px;
+  color: rgba(122,79,50,.85);
   line-height: 1.4;
   margin-left: 10px;
 
@@ -1162,14 +1179,14 @@ body:has(#cadastroToggle:checked){
   gap: 6px;
 }
 
-.item-desc .muted{
+.denuncia-card__registro .muted{
   color: rgba(122,79,50,.85); 
   font-weight: 500;
   opacity: .75;
 }
 
 /* ---------- Rodapé do card (autor + botão) ---------- */
-.item-footer{
+.denuncia-card__rodape{
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid rgba(0,0,0,.08);
@@ -1180,14 +1197,14 @@ body:has(#cadastroToggle:checked){
   color: var(--animal-primary);
 }
 
-.item-author{
+.denuncia-card__autor{
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
 }
 
-.avatar{
+.denuncia-card__avatar{
   width: 34px;
   height: 34px;
   border-radius: 999px;
@@ -1202,7 +1219,7 @@ body:has(#cadastroToggle:checked){
   background: #fff;
 }
 
-.author-name{
+.denuncia-card__autor-nome{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1211,7 +1228,7 @@ body:has(#cadastroToggle:checked){
 }
 
 /* ---------- Paginação (visual) ---------- */
-.pagination-ui{
+.denuncia-paginacao{
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1219,7 +1236,7 @@ body:has(#cadastroToggle:checked){
   padding: 10px 0 26px;
 }
 
-.pg-link, .pg-page{
+.denuncia-paginacao__link, .denuncia-paginacao__pagina{
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,.12);
@@ -1228,26 +1245,35 @@ body:has(#cadastroToggle:checked){
   background: #fff;
 }
 
-.pg-page.active{
+.denuncia-paginacao__pagina--ativa{
   background: #7a4d2a;
   border-color: #7a4d2a;
   color: #fff;
 }
 
 /* ---------- Estado vazio ---------- */
-.empty-state{
+.denuncia-listagem__vazio{
   text-align: center;
   padding: 28px 0 10px;
 }
 
-.pg-link.disabled, .pg-page.disabled{
+.denuncia-paginacao__link--desabilitada,
+.denuncia-paginacao__pagina--desabilitada{
   pointer-events: none;
   opacity: .45;
 }
 
-.pg-ellipsis{
+.denuncia-paginacao__reticencias{
   padding: 0 6px;
   opacity: .6;
+}
+
+/* ---------- Responsividade da grade ---------- */
+@media (max-width: 1100px){
+  .denuncia-listagem__grade{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px){
+  .denuncia-listagem__grade{ grid-template-columns: 1fr; }
 }
 
 /* =========================
@@ -1445,36 +1471,22 @@ body:has(#cadastroToggle:checked){
   box-shadow: 0 5px 14px rgba(0,0,0,.2);
 }
 
-
 /* ==================================================
-   TELA: DETALHES DA DENÚNCIA
-   Prefixo do módulo: .den-
-   Estrutura:
-   1. Layout geral
-   2. Hero (imagem + resumo)
-   3. Metadados principais
-   4. Card de informações do animal
-   5. Ações da denúncia
-   6. Atividade (histórico + comentários)
-   7. Responsividade
+  MÓDULO DE DENÚNCIAS - DETALHES
 ================================================== */
+/* 1. LAYOUT GERAL */
 
-
-/* ==================================================
-   1. LAYOUT GERAL
-================================================== */
-
-.den-detail{
+.denuncia-detalhe{
   padding: 26px 0 40px;
   color: var(--animal-primary);
 }
 
-.den-detail__container{
+.denuncia-detalhe__container{
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
 }
 
-.den-detail__back{
+.denuncia-detalhe__voltar{
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1484,29 +1496,24 @@ body:has(#cadastroToggle:checked){
   background: #fff;
 }
 
-.den-detail .flash{
+.denuncia-detalhe .flash{
   margin: 12px 0;
   font-size: 14px;
   font-weight: 500;
   width: 100%;
 }
 
-.den-detail .flash--success{
+.denuncia-detalhe .flash--success{
   color: #1e7e34;
 }
 
-.den-detail .flash--error{
+.denuncia-detalhe .flash--error{
   color: #c82333;
 }
 
+/* 2. HERO DA DENÚNCIA */
 
-/* ==================================================
-   2. HERO DA DENÚNCIA
-   Coluna esquerda: imagens
-   Coluna direita: título, descrição, meta e ações
-================================================== */
-
-.den-hero{
+.denuncia-detalhe__hero{
   margin-top: 18px;
   display: grid;
   grid-template-columns: 1.35fr 1fr;
@@ -1514,8 +1521,7 @@ body:has(#cadastroToggle:checked){
   align-items: start;
 }
 
-/* Imagem principal */
-.den-image{
+.denuncia-detalhe__imagem-principal{
   border-radius: 16px;
   border: 1px solid var(--border);
   overflow: hidden;
@@ -1523,22 +1529,21 @@ body:has(#cadastroToggle:checked){
   height: 460px;
 }
 
-.den-image img{
+.denuncia-detalhe__imagem-principal img{
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 }
 
-/* Galeria de miniaturas */
-.den-thumbs{
+.denuncia-detalhe__miniaturas{
   margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 10px;
 }
 
-.den-thumb{
+.denuncia-detalhe__miniatura{
   border: 1px solid rgba(0,0,0,.14);
   border-radius: 12px;
   overflow: hidden;
@@ -1547,47 +1552,42 @@ body:has(#cadastroToggle:checked){
   cursor: pointer;
 }
 
-.den-thumb img{
+.denuncia-detalhe__miniatura img{
   width: 100%;
   height: 58px;
   object-fit: cover;
   display: block;
 }
 
-/* Conteúdo textual principal */
-.den-title{
+.denuncia-detalhe__titulo{
   font-family: var(--font-title);
   font-size: clamp(28px, 3vw, 40px);
   margin: 6px 0 10px;
 }
 
-.den-desc{
+.denuncia-detalhe__descricao{
   margin: 0 0 18px;
   line-height: 1.55;
   color: var(--animal-primary);
 }
 
-.den-desc--muted{
+.denuncia-detalhe__descricao--suave{
   color: rgba(0,0,0,.55);
 }
 
-.den-sep{
+.denuncia-detalhe__separador{
   border: 0;
   border-top: 1px solid rgba(0,0,0,.12);
   margin: 18px 0;
 }
 
+/* 3. METADADOS PRINCIPAIS */
 
-/* ==================================================
-   3. METADADOS PRINCIPAIS
-   Status + data + autor
-================================================== */
-
-.den-meta{
+.denuncia-detalhe__metadados{
   margin-top: 4px;
 }
 
-.den-meta--triple{
+.denuncia-detalhe__metadados--triplo{
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1596,19 +1596,19 @@ body:has(#cadastroToggle:checked){
   -webkit-overflow-scrolling: touch;
 }
 
-.den-meta__item{
+.denuncia-detalhe__metadado-item{
   flex: 0 0 auto;
   min-width: max-content;
 }
 
-.den-meta__label{
+.denuncia-detalhe__metadado-rotulo{
   display: block;
   font-size: 12px;
   color: var(--animal-primary);
   margin-bottom: 4px;
 }
 
-.den-meta__value{
+.denuncia-detalhe__metadado-valor{
   display: block;
   font-size: 18px;
   font-weight: 800;
@@ -1618,38 +1618,36 @@ body:has(#cadastroToggle:checked){
   text-overflow: clip;
 }
 
-.den-meta__link{
+.denuncia-detalhe__metadado-link{
   text-decoration: none;
   color: #5a3a24;
 }
 
-.den-meta__link:hover{
+.denuncia-detalhe__metadado-link:hover{
   text-decoration: underline;
 }
 
-/* ==================================================
-   4. CARD DE INFORMAÇÕES DO ANIMAL
-================================================== */
+/* 4. CARD DE INFORMAÇÕES DO ANIMAL */
 
-.den-card{
+.denuncia-detalhe__card-informacoes{
   border: 1px solid var(--border);
   border-radius: 14px;
   background: #fff;
   padding: 14px;
 }
 
-.den-card__title{
+.denuncia-detalhe__card-titulo{
   font-family: var(--font-title);
   font-size: 20px;
   margin-bottom: 10px;
 }
 
-.den-info-grid{
+.denuncia-detalhe__info-grade{
   display: grid;
   gap: 10px;
 }
 
-.den-info-row{
+.denuncia-detalhe__info-linha{
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1658,57 +1656,52 @@ body:has(#cadastroToggle:checked){
   color: var(--animal-primary);
 }
 
-.den-info-row:first-child{
+.denuncia-detalhe__info-linha:first-child{
   border-top: 0;
 }
 
-.den-info-row--full{
+.denuncia-detalhe__info-linha--completa{
   flex-direction: column;
 }
 
-.den-info-k{
+.denuncia-detalhe__info-chave{
   font-size: 15px;
   font-weight: 600;
   color: var(--animal-primary);
 }
 
-.den-info-v{
+.denuncia-detalhe__info-valor{
   font-size: 13px;
   font-weight: 700;
   color: var(--animal-primary);
 }
 
+/* 5. AÇÕES DA DENÚNCIA */
 
-/* ==================================================
-   5. AÇÕES DA DENÚNCIA
-   Alteração de status e botões
-================================================== */
-
-.den-actions{
+.denuncia-detalhe__acoes{
   margin-top: 14px;
 }
 
-.den-statusform{
+.denuncia-detalhe__form-status{
   display: grid;
   gap: 8px;
   margin-top: 6px;
 }
 
-.den-statusform__label{
+.denuncia-detalhe__form-status-rotulo{
   font-weight: 700;
   color: var(--animal-primary);
   font-size: 14px;
 }
 
-/* manter apenas esta versão */
-.den-statusform__row{
+.denuncia-detalhe__form-status-linha{
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 12px;
   width: 100%;
 }
 
-.den-statusform__select{
+.denuncia-detalhe__form-status-selecao{
   width: 100%;
   min-width: 220px;
   padding: 10px 12px;
@@ -1718,27 +1711,13 @@ body:has(#cadastroToggle:checked){
   font-family: inherit;
 }
 
-.den-statusform__row .btn-primary{
+.denuncia-detalhe__form-status-linha .btn-primary{
   height: 100%;
   padding: 0 20px;
   white-space: nowrap;
 }
 
-.den-statusform__hint{
-  color: rgba(0,0,0,.65);
-  font-size: 12px;
-}
-
-.den-note{
-  padding: 10px 12px;
-  border: 1px solid rgba(0,0,0,.12);
-  border-radius: 12px;
-  background: #fff;
-  color: rgba(0,0,0,.7);
-  font-size: 13px;
-}
-
-.btn-primary{
+.denuncia-detalhe .btn-primary{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1751,7 +1730,7 @@ body:has(#cadastroToggle:checked){
   font-weight: 700;
 }
 
-.btn-secondary{
+.denuncia-detalhe .btn-secondary{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1777,25 +1756,22 @@ body:has(#cadastroToggle:checked){
   filter: brightness(.98);
 }
 
+/* 6. SEÇÃO INFERIOR: HISTÓRICO E COMENTÁRIOS */
 
-/* ==================================================
-   6. SEÇÃO INFERIOR: HISTÓRICO E COMENTÁRIOS
-================================================== */
-
-.den-bottom{
+.denuncia-detalhe__atividade{
   margin-top: 34px;
   padding-top: 24px;
   border-top: 1px solid rgba(0,0,0,.12);
 }
 
-.den-bottom__title{
+.denuncia-detalhe__atividade-titulo{
   text-align: center;
   font-family: var(--font-title);
   font-size: 30px;
   margin: 0 0 16px;
 }
 
-.den-bottom__grid{
+.denuncia-detalhe__atividade-grade{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
@@ -1803,14 +1779,14 @@ body:has(#cadastroToggle:checked){
   color: var(--animal-primary);
 }
 
-.den-block{
+.denuncia-detalhe__bloco{
   border: 1px solid var(--border);
   border-radius: 16px;
   background: #fff;
   padding: 16px;
 }
 
-.den-block__head{
+.denuncia-detalhe__bloco-cabecalho{
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1818,13 +1794,13 @@ body:has(#cadastroToggle:checked){
   margin-bottom: 10px;
 }
 
-.den-block__title{
+.denuncia-detalhe__bloco-titulo{
   font-family: var(--font-title);
   font-size: 20px;
   margin: 0;
 }
 
-.den-list{
+.denuncia-detalhe__lista{
   max-height: 260px;
   overflow-y: auto;
   padding-right: 6px;
@@ -1832,65 +1808,65 @@ body:has(#cadastroToggle:checked){
   gap: 10px;
 }
 
-.den-list::-webkit-scrollbar{
+.denuncia-detalhe__lista::-webkit-scrollbar{
   width: 6px;
 }
 
-.den-list::-webkit-scrollbar-thumb{
+.denuncia-detalhe__lista::-webkit-scrollbar-thumb{
   background: rgba(0,0,0,.25);
   border-radius: 6px;
 }
 
-.den-list::-webkit-scrollbar-track{
+.denuncia-detalhe__lista::-webkit-scrollbar-track{
   background: transparent;
 }
 
-.den-item{
+.denuncia-detalhe__item{
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 12px;
   padding: 12px;
   background: #fff;
 }
 
-.den-item__top{
+.denuncia-detalhe__item-topo{
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
 
-.den-item__date{
+.denuncia-detalhe__item-data{
   font-size: 12px;
   color: rgba(0,0,0,.55);
 }
 
-.den-item__body{
+.denuncia-detalhe__item-corpo{
   margin-top: 8px;
   color: rgba(0,0,0,.72);
   line-height: 1.5;
 }
 
-.den-item__body--muted{
+.denuncia-detalhe__item-corpo--suave{
   color: rgba(0,0,0,.60);
 }
 
-.den-empty{
+.denuncia-detalhe__vazio{
   color: var(--animal-primary);
   margin: 8px 0 0;
 }
 
-.den-block__foot{
+.denuncia-detalhe__bloco-rodape{
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid rgba(0,0,0,.10);
 }
 
-.den-subtitle{
+.denuncia-detalhe__subtitulo{
   margin: 0 0 8px;
   font-size: 14px;
 }
 
-.den-addlink{
+.denuncia-detalhe__link-adicionar{
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1900,11 +1876,11 @@ body:has(#cadastroToggle:checked){
   text-decoration: none;
 }
 
-.den-addlink:hover{
+.denuncia-detalhe__link-adicionar:hover{
   text-decoration: underline;
 }
 
-.den-form textarea{
+.denuncia-detalhe__form-comentario textarea{
   width: 100%;
   border: 1px solid rgba(0,0,0,.18);
   border-radius: 12px;
@@ -1913,50 +1889,44 @@ body:has(#cadastroToggle:checked){
   resize: vertical;
 }
 
-.den-form__actions{
+.denuncia-detalhe__form-comentario-acoes{
   margin-top: 10px;
   display: flex;
   justify-content: flex-end;
 }
 
-.den-form--hidden{
-  display: none;
-}
-
-
-/* ==================================================
-   7. RESPONSIVIDADE
-================================================== */
+/* 7. RESPONSIVIDADE */
 
 @media (max-width: 980px){
-  .den-hero{
+  .denuncia-detalhe__hero{
     grid-template-columns: 1fr;
   }
 
-  .den-image{
+  .denuncia-detalhe__imagem-principal{
     min-height: 320px;
   }
 
-  .den-thumbs{
+  .denuncia-detalhe__miniaturas{
     grid-template-columns: repeat(4, 1fr);
   }
 
-  .den-bottom__grid{
+  .denuncia-detalhe__atividade-grade{
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px){
-  .den-meta--triple{
-    grid-template-columns: 1fr;
+  .denuncia-detalhe__metadados--triplo{
+    flex-direction: column;
+    align-items: flex-start;
     gap: 10px;
   }
 
-  .den-statusform__row{
+  .denuncia-detalhe__form-status-linha{
     grid-template-columns: 1fr;
   }
 
-  .den-statusform__row .btn-primary{
+  .denuncia-detalhe__form-status-linha .btn-primary{
     height: auto;
     padding: 12px 16px;
   }

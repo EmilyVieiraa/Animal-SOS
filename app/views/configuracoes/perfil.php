@@ -156,37 +156,37 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
                * id, foto, titulo, especie, condicao, descricao, data_hora, status, usuario_nome
                */
 
-              $a = [];
+              $dadosDenuncia = [];
 
               // id
-              $a['id'] = (string)($d['id'] ?? '');
+              $dadosDenuncia['id'] = (string)($d['id'] ?? '');
 
               // foto (vários nomes possíveis no seu array)
-              $a['foto'] = (string)($d['foto'] ?? $d['imagem_url'] ?? $d['imagem'] ?? $d['caminho_imagem'] ?? '');
+              $dadosDenuncia['foto'] = (string)($d['foto'] ?? $d['imagem_url'] ?? $d['imagem'] ?? $d['caminho_imagem'] ?? '');
 
               // título
-              $a['titulo'] = (string)($d['titulo'] ?? 'Denúncia');
+              $dadosDenuncia['titulo'] = (string)($d['titulo'] ?? 'Denúncia');
 
               // especie (no perfil você tinha "tipo", então caímos nele se não existir "especie")
-              $a['especie'] = (string)($d['especie'] ?? $d['tipo'] ?? 'Animal');
+              $dadosDenuncia['especie'] = (string)($d['especie'] ?? $d['tipo'] ?? 'Animal');
 
               // condição (se existir)
-              $a['condicao'] = (string)($d['condicao'] ?? '');
+              $dadosDenuncia['condicao'] = (string)($d['condicao'] ?? '');
 
               // descrição
-              $a['descricao'] = (string)($d['descricao'] ?? '');
+              $dadosDenuncia['descricao'] = (string)($d['descricao'] ?? '');
 
               // data/hora (ajuste conforme seu retorno real)
-              $a['data_hora'] = (string)($d['data_hora'] ?? $d['data_cadastro'] ?? $d['criado_em'] ?? '');
+              $dadosDenuncia['data_hora'] = (string)($d['data_hora'] ?? $d['data_cadastro'] ?? $d['criado_em'] ?? '');
 
               // status
-              $a['status'] = (string)($d['status'] ?? '');
+              $dadosDenuncia['status'] = (string)($d['status'] ?? '');
 
               // nome do autor (no perfil, o autor é o próprio dono do perfil)
-              $a['usuario_nome'] = $nome;
+              $dadosDenuncia['usuario_nome'] = $nome;
 
               // Variante grande no perfil
-              $variant = 'lg';
+              $variacaoCard = 'lg';
 
               // Renderiza o card reutilizável
               require APP_PATH . 'views/partials/_animal_card.php';
@@ -432,18 +432,18 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
         <div class="perfil-denuncias-grid">
           <?php foreach ($denuncias as $d): ?>
             <?php
-              $a = [];
-              $a['id'] = (string)($d['id'] ?? '');
-              $a['foto'] = (string)($d['foto'] ?? $d['imagem_url'] ?? $d['imagem'] ?? $d['caminho_imagem'] ?? '');
-              $a['titulo'] = (string)($d['titulo'] ?? 'Denúncia');
-              $a['especie'] = (string)($d['especie'] ?? $d['tipo'] ?? 'Animal');
-              $a['condicao'] = (string)($d['condicao'] ?? '');
-              $a['descricao'] = (string)($d['descricao'] ?? '');
-              $a['data_hora'] = (string)($d['data_hora'] ?? $d['data_cadastro'] ?? $d['criado_em'] ?? '');
-              $a['status'] = (string)($d['status'] ?? '');
-              $a['usuario_nome'] = $nome;
+              $dadosDenuncia = [];
+              $dadosDenuncia['id'] = (string)($d['id'] ?? '');
+              $dadosDenuncia['foto'] = (string)($d['foto'] ?? $d['imagem_url'] ?? $d['imagem'] ?? $d['caminho_imagem'] ?? '');
+              $dadosDenuncia['titulo'] = (string)($d['titulo'] ?? 'Denúncia');
+              $dadosDenuncia['especie'] = (string)($d['especie'] ?? $d['tipo'] ?? 'Animal');
+              $dadosDenuncia['condicao'] = (string)($d['condicao'] ?? '');
+              $dadosDenuncia['descricao'] = (string)($d['descricao'] ?? '');
+              $dadosDenuncia['data_hora'] = (string)($d['data_hora'] ?? $d['data_cadastro'] ?? $d['criado_em'] ?? '');
+              $dadosDenuncia['status'] = (string)($d['status'] ?? '');
+              $dadosDenuncia['usuario_nome'] = $nome;
 
-              $variant = 'default'; // mantém igual ao listar (pode trocar se quiser)
+              $variacaoCard = 'default'; // mantém igual ao listar (pode trocar se quiser)
               require APP_PATH . 'views/partials/_animal_card.php';
             ?>
           <?php endforeach; ?>

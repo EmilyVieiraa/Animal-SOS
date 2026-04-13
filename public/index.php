@@ -85,10 +85,6 @@ if (isset($routes[$path])) {
         $controllerClass = 'AnimalController';
         $action = 'detalhes';
         $params['id'] = $segments[1];
-    } elseif (count($segments) === 3 && $segments[0] === 'denuncias' && $segments[2] === 'status') {
-        $controllerClass = 'StatusController';
-        $action = 'atualizar';
-        $params['id'] = $segments[1];
     } else {
         /**
          * 3) Fallback: modo antigo (?c=...&a=...)

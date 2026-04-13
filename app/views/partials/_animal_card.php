@@ -4,101 +4,106 @@ declare(strict_types=1);
 /**
  * Partial: _animal_card.php
  * Espera:
- * - $a (array) dados da denúncia/animal
- * - $variant (opcional) 'default' | 'lg'
+ * - $dadosDenuncia (array) dados da denúncia
+ * - $variacaoCard (opcional) 'default' | 'lg'
  */
 
-$variant = (string)($variant ?? 'default');
+$variacaoCard = (string)($variacaoCard ?? 'default');
+$dadosDenuncia = is_array($dadosDenuncia ?? null) ? $dadosDenuncia : [];
 
-$id        = (string)($a['id'] ?? '');
-$foto      = (string)($a['foto'] ?? '');
-$titulo    = (string)($a['titulo'] ?? '');
-$especie   = (string)($a['especie'] ?? 'Animal');
-$condicao  = (string)($a['condicao'] ?? '');
-$descricao = (string)($a['descricao'] ?? '');
-$dataHora  = formatDateTime((string)($a['data_hora'] ?? ''));
-$st        = (string)($a['status'] ?? '');
-$autorNome = (string)($a['usuario_nome'] ?? $a['nome'] ?? 'Usuário');
+$idDenuncia = (string)($dadosDenuncia['id'] ?? '');
+$fotoDenuncia = (string)($dadosDenuncia['foto'] ?? '');
+$tituloDenuncia = (string)($dadosDenuncia['titulo'] ?? '');
+$especieAnimal = (string)($dadosDenuncia['especie'] ?? 'Animal');
+$condicaoAnimal = (string)($dadosDenuncia['condicao'] ?? '');
+$descricaoDenuncia = (string)($dadosDenuncia['descricao'] ?? '');
+$dataRegistro = formatDateTime((string)($dadosDenuncia['data_hora'] ?? ''));
+$statusDenuncia = (string)($dadosDenuncia['status'] ?? '');
+$nomeAutor = (string)($dadosDenuncia['usuario_nome'] ?? $dadosDenuncia['nome'] ?? 'Usuário');
 
-$hasId  = ($id !== '');
+$possuiId = ($idDenuncia !== '');
 
-// ✅ Ajuste aqui se a sua action for "detalhe" e não "detalhes"
-$detAction = 'detalhes';
+$urlDetalhes = $possuiId
+    ? BASE_URL . '/index.php?c=animal&a=detalhes&id=' . urlencode($idDenuncia)
+    : '';
 
-$detUrl = $hasId
-  ? (BASE_URL . '/index.php?c=animal&a=' . $detAction . '&id=' . urlencode($id))
-  : '';
+$descricaoLimpa = trim((string)preg_replace('/\s+/', ' ', $descricaoDenuncia));
+$limiteDescricao = ($variacaoCard === 'lg') ? 220 : 110;
+$descricaoCurta = mb_strimwidth($descricaoLimpa, 0, $limiteDescricao, '...', 'UTF-8');
 
-$descLimpa = trim(preg_replace('/\s+/', ' ', $descricao));
-$limit = ($variant === 'lg') ? 220 : 110;
-$descCurta = mb_strimwidth($descLimpa, 0, $limit, '...', 'UTF-8');
-
-$cardClass = 'item-card' . ($variant === 'lg' ? ' item-card-lg' : '');
+$classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grande' : '');
 ?>
 
-<article class="<?= h($cardClass) ?>">
+<article class="<?= h($classeCard) ?>">
 
-  <?php if ($hasId): ?>
-    <a class="item-media" href="<?= h($detUrl) ?>" aria-label="Ver detalhes">
+  <?php if ($possuiId): ?>
+    <a class="denuncia-card__midia" href="<?= h($urlDetalhes) ?>" aria-label="Ver detalhes da denúncia">
   <?php else: ?>
-    <div class="item-media" aria-label="Denúncia sem ID (link indisponível)">
+    <div class="denuncia-card__midia" aria-label="Denúncia sem ID (link indisponível)">
   <?php endif; ?>
 
-      <?php if ($foto !== ''): ?>
-        <img src="<?= h(publicImgUrl($foto)) ?>" alt="Foto do animal" loading="lazy">
-      <?php else: ?>
-        <div class="item-placeholder">
-          <span class="ph-icon">🖼️</span>
-          <span class="ph-text">Sem foto</span>
-        </div>
-      <?php endif; ?>
+    <?php if ($fotoDenuncia !== ''): ?>
+      <img src="<?= h(publicImgUrl($fotoDenuncia)) ?>" alt="Foto do animal" loading="lazy">
+    <?php else: ?>
+      <div class="denuncia-card__placeholder">
+        <span class="denuncia-card__placeholder-icone">🖼️</span>
+        <span class="denuncia-card__placeholder-texto">Sem foto</span>
+      </div>
+    <?php endif; ?>
 
-  <?php if ($hasId): ?>
+  <?php if ($possuiId): ?>
     </a>
   <?php else: ?>
     </div>
   <?php endif; ?>
 
-  <div class="item-body">
-    <h3 class="item-title">
-      <?php if ($hasId): ?>
-        <a href="<?= h($detUrl) ?>"><?= h($titulo !== '' ? $titulo : $especie) ?></a>
+  <div class="denuncia-card__corpo">
+    <h3 class="denuncia-card__titulo">
+      <?php if ($possuiId): ?>
+        <a href="<?= h($urlDetalhes) ?>">
+          <?= h($tituloDenuncia !== '' ? $tituloDenuncia : $especieAnimal) ?>
+        </a>
       <?php else: ?>
-        <?= h($titulo !== '' ? $titulo : $especie) ?>
+        <?= h($tituloDenuncia !== '' ? $tituloDenuncia : $especieAnimal) ?>
       <?php endif; ?>
     </h3>
 
-    <div class="item-tags">
-      <?php if ($st !== ''): ?>
-        <span class="<?= h(statusBadgeClassUI($st)) ?>"><?= h($st) ?></span>
+    <div class="denuncia-card__etiquetas">
+      <?php if ($statusDenuncia !== ''): ?>
+        <span class="<?= h(statusBadgeClassUI($statusDenuncia)) ?>">
+          <?= h($statusDenuncia) ?>
+        </span>
       <?php endif; ?>
-      <?php if ($condicao !== ''): ?>
-        <span class="<?= h(condicaoBadgeClassUI($condicao)) ?>"><?= h($condicao) ?></span>
+
+      <?php if ($condicaoAnimal !== ''): ?>
+        <span class="<?= h(condicaoBadgeClassUI($condicaoAnimal)) ?>">
+          <?= h($condicaoAnimal) ?>
+        </span>
       <?php endif; ?>
     </div>
 
-    <?php if ($descLimpa !== ''): ?>
-      <div class="item-description"><?= h($descCurta) ?></div>
+    <?php if ($descricaoLimpa !== ''): ?>
+      <div class="denuncia-card__descricao"><?= h($descricaoCurta) ?></div>
     <?php else: ?>
-      <div class="item-description muted">Sem descrição.</div>
+      <div class="denuncia-card__descricao muted">Sem descrição.</div>
     <?php endif; ?>
 
-    <p class="item-desc">
-      <?php if ($dataHora !== ''): ?>
-        <span class="muted">Registrado em:</span> <?= h($dataHora) ?>
+    <p class="denuncia-card__registro">
+      <?php if ($dataRegistro !== ''): ?>
+        <span class="muted">Registrado em:</span> <?= h($dataRegistro) ?>
       <?php else: ?>
         <span class="muted">Registro sem data informada.</span>
       <?php endif; ?>
     </p>
 
-    <div class="item-footer">
-      <div class="item-author">
-        <div class="avatar"><?= h(initials($autorNome)) ?></div>
-        <div class="author-name"><?= h($autorNome) ?></div>
+    <div class="denuncia-card__rodape">
+      <div class="denuncia-card__autor">
+        <div class="denuncia-card__avatar"><?= h(initials($nomeAutor)) ?></div>
+        <div class="denuncia-card__autor-nome"><?= h($nomeAutor) ?></div>
       </div>
 
-      <?php if ($hasId): ?>
-        <a class="btn-ui btn-ui-ghost" href="<?= h($detUrl) ?>">Ver detalhes</a>
+      <?php if ($possuiId): ?>
+        <a class="btn-ui btn-ui-ghost" href="<?= h($urlDetalhes) ?>">Ver detalhes</a>
       <?php else: ?>
         <span class="btn-ui btn-ui-ghost disabled" aria-disabled="true">Ver detalhes</span>
       <?php endif; ?>

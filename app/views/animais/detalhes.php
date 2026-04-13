@@ -1,195 +1,205 @@
 <?php
 declare(strict_types=1);
+
 require_once APP_PATH . 'helpers/view_helpers.php';
 
-/**
- * Variáveis seguras (uma única vez)
- */
-$titulo    = (string)($animal['titulo'] ?? '');
-$descricao = (string)($animal['descricao'] ?? '');
+// Dados da denúncia
+$denunciaId = (string)($denuncia['id'] ?? '');
+$tituloDenuncia = (string)($denuncia['titulo'] ?? '');
+$descricaoDenuncia = (string)($denuncia['descricao'] ?? '');
+$especieAnimal = (string)($denuncia['especie'] ?? '—');
+$condicaoAnimal = (string)($denuncia['condicao'] ?? '—');
+$corAnimal = (string)($denuncia['cor'] ?? '—');
+$localizacaoDenuncia = (string)($denuncia['localizacao'] ?? '—');
+$statusDenuncia = (string)($denuncia['status'] ?? 'Aguardando');
+$dataRegistro = formatDateTime((string)($denuncia['data_hora'] ?? ''));
+$nomeAutor = (string)($denuncia['usuario_nome'] ?? '—');
+$autorId = (string)($denuncia['criado_por'] ?? '');
 
-$especie   = (string)($animal['especie'] ?? '—');
-$condicao  = (string)($animal['condicao'] ?? '—');
-$cor       = (string)($animal['cor'] ?? '—');
-$local     = (string)($animal['localizacao'] ?? '—');
+// Sessão e mensagens
+$usuarioLogado = !empty($_SESSION['usuario_id']);
+$mensagemSucesso = (string)($_SESSION['flash_success'] ?? '');
+$mensagemErro = (string)($_SESSION['flash_error'] ?? '');
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
-$status    = (string)($animal['status'] ?? 'Aguardando');
-$dataHora  = formatDateTime((string)($animal['data_hora'] ?? ''));
-$autorNome = (string)($animal['usuario_nome'] ?? '—');
-$autorId   = (string)($animal['criado_por'] ?? '');
+// Dados preparados no controller
+$podeAtualizarStatus = (bool)($podeAlterarStatus ?? false);
+$statusDisponiveisParaAtualizacao = is_array($statusDisponiveis ?? null) ? $statusDisponiveis : [];
+$imagemPlaceholderTela = (string)($imagemPlaceholder ?? (BASE_URL . '/assets/img/placeholder-animal.jpg'));
 
-/**
- * Sessão (padronizada conforme seu AuthController)
- */
-$isLogged    = !empty($_SESSION['usuario_id']);
-$tipoUsuario = (string)($_SESSION['tipo_usuario'] ?? 'Comum');
+// URL de retorno para login
+$urlRetorno = '/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId);
 
-/**
- * Permissões de status (UI)
- */
-$canUpdateStatus = in_array($tipoUsuario, ['ONG', 'Autoridade', 'Admin'], true);
-
-$statusOptions = [];
-if ($tipoUsuario === 'ONG') {
-  $statusOptions = ['Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
-} elseif (in_array($tipoUsuario, ['Autoridade', 'Admin'], true)) {
-  $statusOptions = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
+// Imagem principal
+$imagemPrincipal = '';
+if (!empty($imagens) && is_array($imagens)) {
+    foreach ($imagens as $imagem) {
+        $caminhoImagem = (string)($imagem['caminho'] ?? '');
+        if ($caminhoImagem !== '') {
+            $imagemPrincipal = $caminhoImagem;
+            break;
+        }
+    }
 }
 
-/**
- * Imagem principal: primeira da galeria, senão placeholder
- */
-$imgPrincipal = null;
-if (!empty($imagens) && !empty($imagens[0]['caminho'])) {
-  $imgPrincipal = (string)$imagens[0]['caminho'];
-}
-$placeholder = BASE_URL . '/assets/img/placeholder-animal.jpg';
+$urlImagemPrincipal = $imagemPrincipal !== ''
+    ? publicImgUrl($imagemPrincipal)
+    : $imagemPlaceholderTela;
 
-// URL de retorno para esta denúncia (usada no login)
-$returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['id'] ?? ''));
+$mostrarFormularioStatus = $usuarioLogado
+    && $podeAtualizarStatus
+    && !empty($statusDisponiveisParaAtualizacao);
 ?>
 
-<section class="den-detail">
-  <div class="den-detail__container">
+<section class="denuncia-detalhe">
+  <div class="denuncia-detalhe__container">
 
-    <a class="den-detail__back" href="<?= BASE_URL ?>/index.php?c=animal&a=listar">← Voltar</a>
+    <a class="denuncia-detalhe__voltar" href="<?= BASE_URL ?>/index.php?c=animal&a=listar">← Voltar</a>
 
-    <?php if (!empty($_SESSION['flash_success'])): ?>
+    <?php if ($mensagemSucesso !== ''): ?>
       <div class="flash flash--success">
-        <?= h((string)$_SESSION['flash_success']) ?>
+        <?= h($mensagemSucesso) ?>
       </div>
-      <?php unset($_SESSION['flash_success']); ?>
     <?php endif; ?>
 
-    <?php if (!empty($_SESSION['flash_error'])): ?>
+    <?php if ($mensagemErro !== ''): ?>
       <div class="flash flash--error">
-        <?= h((string)$_SESSION['flash_error']) ?>
+        <?= h($mensagemErro) ?>
       </div>
-      <?php unset($_SESSION['flash_error']); ?>
     <?php endif; ?>
 
-    <div class="den-hero">
+    <div class="denuncia-detalhe__hero">
 
-      <!-- Coluna esquerda: imagem -->
-      <div class="den-hero__media">
-        <div class="den-image">
+      <!-- Coluna esquerda -->
+      <div class="denuncia-detalhe__hero-midia">
+        <div class="denuncia-detalhe__imagem-principal">
           <img
-            src="<?= h($imgPrincipal ?: $placeholder) ?>"
+            src="<?= h($urlImagemPrincipal) ?>"
             alt="Foto da denúncia"
             loading="lazy"
-            onerror="this.src='<?= h($placeholder) ?>'"
+            onerror="this.src='<?= h($imagemPlaceholderTela) ?>'"
           >
         </div>
 
         <?php if (!empty($imagens) && count($imagens) > 1): ?>
-          <div class="den-thumbs" aria-label="Galeria de imagens">
-            <?php foreach ($imagens as $idx => $img): ?>
-              <?php
-                $src = (string)($img['caminho'] ?? '');
-                if ($src === '') continue;
-              ?>
+          <div class="denuncia-detalhe__miniaturas" aria-label="Galeria de imagens">
+            <?php foreach ($imagens as $idx => $img):
+              $src = (string)($img['caminho'] ?? '');
+              if ($src === '') {
+                  continue;
+              }
+              $urlImagem = publicImgUrl($src);
+            ?>
               <button
                 type="button"
-                class="den-thumb"
-                data-src="<?= h($src) ?>"
+                class="denuncia-detalhe__miniatura"
+                data-src="<?= h($urlImagem) ?>"
                 aria-label="Ver imagem <?= (int)($idx + 1) ?>"
               >
-                <img src="<?= h($src) ?>" alt="Miniatura <?= (int)($idx + 1) ?>" loading="lazy">
+                <img
+                  src="<?= h($urlImagem) ?>"
+                  alt="Miniatura <?= (int)($idx + 1) ?>"
+                  loading="lazy"
+                >
               </button>
             <?php endforeach; ?>
           </div>
         <?php endif; ?>
       </div>
 
-      <!-- Coluna direita: informações -->
-      <div class="den-hero__info">
+      <!-- Coluna direita -->
+      <div class="denuncia-detalhe__hero-conteudo">
 
-        <!-- TÍTULO DA DENÚNCIA -->
-        <h2 class="den-title"><?= h($titulo !== '' ? $titulo : 'Denúncia sem título') ?></h2>
+        <h2 class="denuncia-detalhe__titulo">
+          <?= h($tituloDenuncia !== '' ? $tituloDenuncia : 'Denúncia sem título') ?>
+        </h2>
 
-        <!-- DESCRIÇÃO -->
-        <?php if ($descricao !== ''): ?>
-          <p class="den-desc"><?= nl2br(h($descricao)) ?></p>
+        <?php if ($descricaoDenuncia !== ''): ?>
+          <p class="denuncia-detalhe__descricao"><?= nl2br(h($descricaoDenuncia)) ?></p>
         <?php else: ?>
-          <p class="den-desc den-desc--muted">Sem descrição.</p>
+          <p class="denuncia-detalhe__descricao denuncia-detalhe__descricao--suave">Sem descrição.</p>
         <?php endif; ?>
 
-        <!-- STATUS + REGISTRADO EM + AUTOR -->
-        <div class="den-meta den-meta--triple">
-          <div class="den-meta__item">
-            <span class="den-meta__label">Status</span>
-            <span class="den-meta__value"><?= h($status) ?></span>
+        <div class="denuncia-detalhe__metadados denuncia-detalhe__metadados--triplo">
+          <div class="denuncia-detalhe__metadado-item">
+            <span class="denuncia-detalhe__metadado-rotulo">Status</span>
+            <span class="denuncia-detalhe__metadado-valor"><?= h($statusDenuncia) ?></span>
           </div>
 
-          <div class="den-meta__item">
-            <span class="den-meta__label">Registrado em</span>
-            <span class="den-meta__value"><?= h($dataHora !== '' ? $dataHora : '—') ?></span>
+          <div class="denuncia-detalhe__metadado-item">
+            <span class="denuncia-detalhe__metadado-rotulo">Registrado em</span>
+            <span class="denuncia-detalhe__metadado-valor"><?= h($dataRegistro !== '' ? $dataRegistro : '—') ?></span>
           </div>
 
-          <div class="den-meta__item">
-            <span class="den-meta__label">Autor</span>
+          <div class="denuncia-detalhe__metadado-item">
+            <span class="denuncia-detalhe__metadado-rotulo">Autor</span>
 
             <?php if ($autorId !== ''): ?>
               <a
                 href="<?= BASE_URL ?>/index.php?c=usuario&a=perfil&id=<?= h($autorId) ?>"
-                class="den-meta__value den-meta__link"
-                title="<?= h($autorNome) ?>"
+                class="denuncia-detalhe__metadado-valor denuncia-detalhe__metadado-link"
+                title="<?= h($nomeAutor) ?>"
               >
-                <?= h($autorNome) ?>
+                <?= h($nomeAutor) ?>
               </a>
             <?php else: ?>
-              <span class="den-meta__value">—</span>
+              <span class="denuncia-detalhe__metadado-valor">—</span>
             <?php endif; ?>
           </div>
-
         </div>
 
-        <hr class="den-sep">
+        <hr class="denuncia-detalhe__separador">
 
-        <!-- Card: Informações -->
-        <div class="den-card">
-          <div class="den-card__title">Informações do animal</div>
+        <div class="denuncia-detalhe__card-informacoes">
+          <div class="denuncia-detalhe__card-titulo">Informações do animal</div>
 
-          <div class="den-info-grid">
-            <div class="den-info-row">
-              <span class="den-info-k">Espécie</span>
-              <span class="den-info-v"><?= h($especie) ?></span>
+          <div class="denuncia-detalhe__info-grade">
+            <div class="denuncia-detalhe__info-linha">
+              <span class="denuncia-detalhe__info-chave">Espécie</span>
+              <span class="denuncia-detalhe__info-valor"><?= h($especieAnimal) ?></span>
             </div>
 
-            <div class="den-info-row">
-              <span class="den-info-k">Condição</span>
-              <span class="den-info-v"><?= h($condicao) ?></span>
+            <div class="denuncia-detalhe__info-linha">
+              <span class="denuncia-detalhe__info-chave">Condição</span>
+              <span class="denuncia-detalhe__info-valor"><?= h($condicaoAnimal) ?></span>
             </div>
 
-            <div class="den-info-row">
-              <span class="den-info-k">Cor</span>
-              <span class="den-info-v"><?= h($cor) ?></span>
+            <div class="denuncia-detalhe__info-linha">
+              <span class="denuncia-detalhe__info-chave">Cor</span>
+              <span class="denuncia-detalhe__info-valor"><?= h($corAnimal) ?></span>
             </div>
 
-            <div class="den-info-row den-info-row--full">
-              <span class="den-info-k">Local</span>
-              <span class="den-info-v"><?= h($local) ?></span>
+            <div class="denuncia-detalhe__info-linha denuncia-detalhe__info-linha--completa">
+              <span class="denuncia-detalhe__info-chave">Local</span>
+              <span class="denuncia-detalhe__info-valor"><?= h($localizacaoDenuncia) ?></span>
             </div>
           </div>
         </div>
 
-        <!-- Ações -->
-        <div class="den-actions">
-          <?php if ($isLogged && $canUpdateStatus): ?>
+        <div class="denuncia-detalhe__acoes">
+          <?php if ($mostrarFormularioStatus): ?>
             <form
               method="post"
               action="<?= BASE_URL ?>/index.php?c=animal&a=atualizarStatus"
-              class="den-statusform"
+              class="denuncia-detalhe__form-status"
             >
-              <input type="hidden" name="animal_id" value="<?= h($animal['id'] ?? '') ?>">
+              <input type="hidden" name="animal_id" value="<?= h($denunciaId) ?>">
 
-              <label class="den-statusform__label" for="status-select">Alterar status</label>
+              <label class="denuncia-detalhe__form-status-rotulo" for="status-select">Alterar status</label>
 
-              <div class="den-statusform__row">
-                <select id="status-select" name="status" class="den-statusform__select" required>
-                  <?php foreach ($statusOptions as $opt): ?>
-                    <option value="<?= h($opt) ?>" <?= $opt === $status ? 'selected' : '' ?>>
-                      <?= h($opt) ?>
+              <div class="denuncia-detalhe__form-status-linha">
+                <select
+                  id="status-select"
+                  name="status"
+                  class="denuncia-detalhe__form-status-selecao"
+                  required
+                >
+                  <?php foreach ($statusDisponiveisParaAtualizacao as $statusOpcao): ?>
+                    <option
+                      value="<?= h((string)$statusOpcao) ?>"
+                      <?= (string)$statusOpcao === $statusDenuncia ? 'selected' : '' ?>
+                    >
+                      <?= h((string)$statusOpcao) ?>
                     </option>
                   <?php endforeach; ?>
                 </select>
@@ -203,102 +213,106 @@ $returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['i
       </div>
     </div>
 
-    <!-- Seção inferior -->
-    <div class="den-bottom">
-      <h2 class="den-bottom__title">Atividade na denúncia</h2>
+    <div class="denuncia-detalhe__atividade">
+      <h2 class="denuncia-detalhe__atividade-titulo">Atividade na denúncia</h2>
 
-      <div class="den-bottom__grid">
+      <div class="denuncia-detalhe__atividade-grade">
+
         <!-- Histórico -->
-        <div class="den-block">
-          <div class="den-block__head">
-            <h3 class="den-block__title">Histórico de status</h3>
+        <div class="denuncia-detalhe__bloco">
+          <div class="denuncia-detalhe__bloco-cabecalho">
+            <h3 class="denuncia-detalhe__bloco-titulo">Histórico de status</h3>
           </div>
 
           <?php if (!empty($historico)): ?>
-            <div class="den-list">
-              <?php foreach ($historico as $hItem): ?>
-                <div class="den-item">
-                  <div class="den-item__top">
-                    <strong><?= h($hItem['novo_status'] ?? '') ?></strong>
+            <div class="denuncia-detalhe__lista">
+              <?php foreach ($historico as $itemHistorico): ?>
+                <div class="denuncia-detalhe__item">
+                  <div class="denuncia-detalhe__item-topo">
+                    <strong><?= h($itemHistorico['novo_status'] ?? '') ?></strong>
 
-                    <?php if (!empty($hItem['status_anterior'])): ?>
-                      <span class="den-item__date">de <?= h($hItem['status_anterior']) ?></span>
+                    <?php if (!empty($itemHistorico['status_anterior'])): ?>
+                      <span class="denuncia-detalhe__item-data">
+                        de <?= h($itemHistorico['status_anterior']) ?>
+                      </span>
                     <?php endif; ?>
                   </div>
 
-                  <div class="den-item__body den-item__body--muted">
-                    Por <?= h($hItem['atualizado_por_nome'] ?? '') ?>
-                    em <?= h(formatDateTime((string)($hItem['data_hora'] ?? ''))) ?>
+                  <div class="denuncia-detalhe__item-corpo denuncia-detalhe__item-corpo--suave">
+                    Por <?= h($itemHistorico['atualizado_por_nome'] ?? '') ?>
+                    em <?= h(formatDateTime((string)($itemHistorico['data_hora'] ?? ''))) ?>
                   </div>
                 </div>
               <?php endforeach; ?>
             </div>
           <?php else: ?>
-            <p class="den-empty">Sem alterações de status registradas.</p>
+            <p class="denuncia-detalhe__vazio">Sem alterações de status registradas.</p>
           <?php endif; ?>
         </div>
 
         <!-- Comentários -->
-        <div class="den-block">
-          <div class="den-block__head">
-            <h3 class="den-block__title">Comentários</h3>
+        <div class="denuncia-detalhe__bloco">
+          <div class="denuncia-detalhe__bloco-cabecalho">
+            <h3 class="denuncia-detalhe__bloco-titulo">Comentários</h3>
           </div>
 
           <?php if (!empty($comentarios)): ?>
-            <div class="den-list">
-              <?php foreach ($comentarios as $c): ?>
-                <div class="den-item">
-                  <div class="den-item__top">
-                    <strong><?= h($c['usuario_nome'] ?? 'Usuário') ?></strong>
-                    <span class="den-item__date"><?= h(formatDateTime((string)($c['data_hora'] ?? ''))) ?></span>
+            <div class="denuncia-detalhe__lista">
+              <?php foreach ($comentarios as $comentario): ?>
+                <div class="denuncia-detalhe__item">
+                  <div class="denuncia-detalhe__item-topo">
+                    <strong><?= h($comentario['usuario_nome'] ?? 'Usuário') ?></strong>
+                    <span class="denuncia-detalhe__item-data">
+                      <?= h(formatDateTime((string)($comentario['data_hora'] ?? ''))) ?>
+                    </span>
                   </div>
-                  <div class="den-item__body">
-                    <?= nl2br(h($c['mensagem'] ?? '')) ?>
+
+                  <div class="denuncia-detalhe__item-corpo">
+                    <?= nl2br(h($comentario['mensagem'] ?? '')) ?>
                   </div>
                 </div>
               <?php endforeach; ?>
             </div>
           <?php else: ?>
-            <p class="den-empty">Nenhum comentário ainda.</p>
+            <p class="denuncia-detalhe__vazio">Nenhum comentário ainda.</p>
           <?php endif; ?>
 
-          <div class="den-block__foot">
-
-            <?php if (!$isLogged): ?>
-              <h4 class="den-subtitle">
+          <div class="denuncia-detalhe__bloco-rodape">
+            <?php if (!$usuarioLogado): ?>
+              <h4 class="denuncia-detalhe__subtitulo">
                 <a
-                  href="<?= BASE_URL ?>/index.php?c=auth&a=login&return=<?= urlencode($returnTo) ?>"
-                  class="den-addlink"
+                  href="<?= BASE_URL ?>/index.php?c=auth&a=login&return=<?= urlencode($urlRetorno) ?>"
+                  class="denuncia-detalhe__link-adicionar"
                 >
                   Adicionar comentário
                 </a>
               </h4>
             <?php endif; ?>
 
-            <?php if ($isLogged): ?>
+            <?php if ($usuarioLogado): ?>
               <form
                 id="form-comentario"
                 method="post"
                 action="<?= BASE_URL ?>/index.php?c=comentario&a=adicionar"
-                class="den-form"
+                class="denuncia-detalhe__form-comentario"
               >
-                <input type="hidden" name="animal_id" value="<?= h($animal['id'] ?? '') ?>">
+                <input type="hidden" name="animal_id" value="<?= h($denunciaId) ?>">
 
                 <textarea
                   name="mensagem"
                   rows="3"
                   required
-                  placeholder="Publicar comentário"></textarea>
+                  placeholder="Publicar comentário"
+                ></textarea>
 
-                <div class="den-form__actions">
+                <div class="denuncia-detalhe__form-comentario-acoes">
                   <button type="submit" class="btn-primary">Publicar</button>
                 </div>
               </form>
             <?php endif; ?>
-
           </div>
-
         </div>
+
       </div>
     </div>
 
@@ -306,17 +320,17 @@ $returnTo = '/index.php?c=animal&a=detalhes&id=' . urlencode((string)($animal['i
 </section>
 
 <script>
-  // Troca da imagem principal ao clicar nas miniaturas
-  (function(){
-    const mainImg = document.querySelector('.den-image img');
-    const thumbs = document.querySelectorAll('.den-thumb');
-    if (!mainImg || !thumbs.length) return;
+  (function () {
+    const imagemPrincipal = document.querySelector('.denuncia-detalhe__imagem-principal img');
+    const miniaturas = document.querySelectorAll('.denuncia-detalhe__miniatura');
 
-    thumbs.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const src = btn.getAttribute('data-src');
-        if (!src) return;
-        mainImg.src = src;
+    if (!imagemPrincipal || !miniaturas.length) return;
+
+    miniaturas.forEach((miniatura) => {
+      miniatura.addEventListener('click', () => {
+        const novaFonte = miniatura.getAttribute('data-src');
+        if (!novaFonte) return;
+        imagemPrincipal.src = novaFonte;
       });
     });
   })();

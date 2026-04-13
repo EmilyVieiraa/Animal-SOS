@@ -4,318 +4,308 @@ declare(strict_types=1);
 final class AnimalController extends Controller
 {
     private HistoricoStatus $historicoStatusModel;
-
     private Animal $animalModel;
     private Comentario $comentarioModel;
-    private Status $statusModel;
-
-    private const STATUS_VALIDOS = ['Aguardando', 'Em andamento', 'Resgatado', 'Adoção', 'Finalizado'];
 
     /**
-     * Regras de transição por papel.
-     * Ajuste se quiser permitir mais/menos.
+     * Regras de transição de status por tipo de usuário.
      */
-    private const STATUS_POR_PAPEL = [
+    private const StatusPermitidosPorTipo = [
         'Comum'      => [],
         'ONG'        => ['Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
         'Autoridade' => ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
         'Admin'      => ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
     ];
 
-    /**
-     * Retorna true se o usuário pode mudar o status do animal para $novoStatus
-     * de acordo com o papel + regras adicionais (ex.: ONG precisa ser responsável).
-     */
-    private function podeAlterarStatus(array $usuario, array $animal, string $novoStatus): bool
-    {
-        $papel = $usuario['tipo_usuario'] ?? 'Comum';
-
-        // valida status conhecido
-        if (!in_array($novoStatus, self::STATUS_VALIDOS, true)) {
-            return false;
-        }
-
-        // valida se o papel existe na matriz
-        if (!array_key_exists($papel, self::STATUS_POR_PAPEL)) {
-            return false;
-        }
-
-        // valida se o papel pode escolher esse status
-        if (!in_array($novoStatus, self::STATUS_POR_PAPEL[$papel], true)) {
-            return false;
-        }
-
-        // regra extra: ONG só pode mudar se for responsável
-        if ($papel === 'ONG') {
-            $responsavelId = $animal['responsavel_id'] ?? null;
-            return $responsavelId === ($usuario['id'] ?? null);
-        }
-
-        return true;
-    }
-
-    /**
-     * Construtor
-     */
     public function __construct()
     {
         $this->animalModel = new Animal();
         $this->comentarioModel = new Comentario();
-        $this->statusModel = new Status();
         $this->historicoStatusModel = new HistoricoStatus();
     }
 
     /**
-     * Lista todas as denúncias de animais (público)
+     * Lista denúncias de animais com paginação e filtro por status.
      */
     public function listar(): void
     {
-        $status = $_GET['status'] ?? '';
-        $status = is_string($status) ? trim($status) : '';
+        $filtroStatus = $_GET['status'] ?? '';
+        $filtroStatus = is_string($filtroStatus) ? trim($filtroStatus) : '';
 
-        $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
-        if ($page < 1) $page = 1;
-
-        $perPage = 9;
-        $offset  = ($page - 1) * $perPage;
-
-        // Total de registros (para calcular páginas)
-        $total = $this->animalModel->countDenuncias($status);
-        $totalPages = (int)ceil($total / $perPage);
-        if ($totalPages < 1) $totalPages = 1;
-
-        // Ajusta caso o usuário peça uma página além do máximo
-        if ($page > $totalPages) {
-            $page = $totalPages;
-            $offset = ($page - 1) * $perPage;
+        $paginaAtual = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+        if ($paginaAtual < 1) {
+            $paginaAtual = 1;
         }
 
-        // Lista da página atual
-        $animais = $this->animalModel->listarPaginado($status, $perPage, $offset);
+        $itensParPagina = 9;
+        $deslocamento = ($paginaAtual - 1) * $itensParPagina;
+
+        $totalDenuncias = $this->animalModel->contarDenuncias($filtroStatus);
+        $totalPaginas = (int)ceil($totalDenuncias / $itensParPagina) ?: 1;
+
+        if ($paginaAtual > $totalPaginas) {
+            $paginaAtual = $totalPaginas;
+            $deslocamento = ($paginaAtual - 1) * $itensParPagina;
+        }
+
+        $denunciasListadas = $this->animalModel->listarComPaginacao($filtroStatus, $itensParPagina, $deslocamento);
 
         $this->view('animais/listar', [
-            'animais'     => $animais,
-            'status'      => $status,
-            'page'        => $page,
-            'perPage'     => $perPage,
-            'total'       => $total,
-            'totalPages'  => $totalPages,
+            'denuncias'      => $denunciasListadas,
+            'status'         => $filtroStatus,
+            'page'           => $paginaAtual,
+            'perPage'        => $itensParPagina,
+            'total'          => $totalDenuncias,
+            'totalPages'     => $totalPaginas,
         ]);
     }
 
     /**
-     * Detalhes de uma denúncia
+     * Exibe detalhes de uma denúncia específica.
      */
     public function detalhes(): void
     {
-        $id = (string)($_GET['id'] ?? '');
-        if ($id === '') {
-            // Em vez de morrer, redireciona para a listagem (melhor UX)
+        $denunciaId = (string)($_GET['id'] ?? '');
+        if ($denunciaId === '') {
             $_SESSION['flash_error'] = 'Denúncia inválida ou não informada.';
             $this->redirect('/index.php?c=animal&a=listar');
             return;
         }
 
-        $animal = $this->animalModel->buscarPorId($id);
-        if (!$animal) {
+        $informacaoDenuncia = $this->animalModel->buscarPorId($denunciaId);
+        if (!$informacaoDenuncia) {
             http_response_code(404);
             exit('Denúncia não encontrada.');
         }
 
-        $animalId = (string)($animal['id'] ?? $id);
+        $imagensDenuncia = $this->animalModel->listarImagens($denunciaId);
+        $comentariosDenuncia = $this->comentarioModel->listarPorAnimal($denunciaId);
+        $historicoDenuncia = $this->historicoStatusModel->listarPorAnimal($denunciaId);
 
-        $imagens = method_exists($this->animalModel, 'listarImagens')
-            ? $this->animalModel->listarImagens($animalId)
-            : [];
-
-        $comentarios = method_exists($this->comentarioModel, 'listarPorAnimal')
-            ? $this->comentarioModel->listarPorAnimal($animalId)
-            : [];
-
-        $historico = $this->historicoStatusModel->listarPorAnimal($animalId);
+        // Prépara dados de permissão para a view
+        $tipoUsuarioLogado = (string)($_SESSION['tipo_usuario'] ?? 'Comum');
+        $podeAlterarStatus = in_array($tipoUsuarioLogado, ['ONG', 'Autoridade', 'Admin'], true);
+        $statusDisponiveis = $this->obterStatusDisponiveisParaTipo($tipoUsuarioLogado);
 
         $this->view('animais/detalhes', [
-            'animal'      => $animal,
-            'imagens'     => $imagens,
-            'comentarios' => $comentarios,
-            'historico'   => $historico,
+            'denuncia'            => $informacaoDenuncia,
+            'imagens'             => $imagensDenuncia,
+            'comentarios'         => $comentariosDenuncia,
+            'historico'           => $historicoDenuncia,
+            'podeAlterarStatus'   => $podeAlterarStatus,
+            'statusDisponiveis'   => $statusDisponiveis,
+            'imagemPlaceholder'   => BASE_URL . '/assets/img/placeholder-animal.jpg',
         ]);
     }
 
     /**
-     * GET  -> mostra formulário
-     * POST -> cria denúncia
+     * Retorna os status disponíveis para alterar conforme o tipo de usuário.
+     */
+    private function obterStatusDisponiveisParaTipo(string $tipoUsuario): array
+    {
+        return self::StatusPermitidosPorTipo[$tipoUsuario] ?? [];
+    }
+
+    /**
+     * GET: Exibe formulário de denúncia
+     * POST: Processa e cria nova denúncia
      */
     public function reportar(): void
     {
         $this->requireAuth();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            // =========================
-            // Campos do formulário
-            // =========================
-            $titulo    = trim((string)($_POST['titulo'] ?? ''));
-            $especie   = trim((string)($_POST['especie'] ?? ''));
-            $cor       = trim((string)($_POST['cor'] ?? ''));
-            $condicao  = trim((string)($_POST['condicao'] ?? ''));
-            $descricao = trim((string)($_POST['descricao'] ?? ''));
-
-            // Endereço (CEP + campos)
-            $cep    = trim((string)($_POST['cep'] ?? ''));
-            $rua    = trim((string)($_POST['rua'] ?? ''));
-            $numero = trim((string)($_POST['numero'] ?? ''));
-            $bairro = trim((string)($_POST['bairro'] ?? ''));
-            $cidade = trim((string)($_POST['cidade'] ?? ''));
-            $estado = trim((string)($_POST['estado'] ?? ''));
-
-            // =========================
-            // Validações
-            // =========================
-
-            if ($titulo === '') {
-            $this->view('animais/reportar', [
-                'erro' => 'Informe o título da denúncia.',
-                'old'  => $_POST
-            ]);
-            return;
-            }
-
-            if ($especie === '') {
-                $this->view('animais/reportar', [
-                    'erro' => 'Espécie é obrigatória.',
-                    'old'  => $_POST,
-                ]);
-                return;
-            }
-
-            // =========================
-            // Monta localizacao (texto)
-            // =========================
-            $enderecoParts = array_filter([
-                $rua !== '' ? $rua : null,
-                $numero !== '' ? "nº {$numero}" : null,
-                $bairro !== '' ? $bairro : null,
-                ($cidade !== '' || $estado !== '') ? trim($cidade . ' - ' . $estado) : null,
-                $cep !== '' ? "CEP {$cep}" : null,
-            ]);
-
-            $localizacaoFinal = implode(', ', $enderecoParts);
-
-            // =========================
-            // Upload (1 ou várias)
-            // =========================
-            try {
-                $paths = $this->salvarUploadsAnimais('fotos', 5, 2 * 1024 * 1024);
-            } catch (\Throwable $e) {
-                $this->view('animais/reportar', [
-                    'erro' => $e->getMessage(),
-                    'old'  => $_POST,
-                ]);
-                return;
-            }
-
-            // CAPA = primeira imagem
-            $fotoCapa = $paths[0] ?? null;
-
-            // =========================
-            // Salva denúncia
-            // =========================
-            $dados = [
-                'usuario_id'  => (string)($_SESSION['usuario_id'] ?? ''),
-                'foto'        => $fotoCapa, // capa
-                'titulo'      => $titulo,
-                'descricao'   => $descricao !== '' ? $descricao : null,
-                'especie'     => $especie,
-                'cor'         => $cor !== '' ? $cor : null,
-                'condicao'    => $condicao !== '' ? $condicao : null,
-                'localizacao' => $localizacaoFinal !== '' ? $localizacaoFinal : null,
-            ];
-
-            $titulo = trim((string)($_POST['titulo'] ?? ''));
-            if ($titulo === '') {
-            // retorna erro
-            }
-
-            $id = $this->animalModel->criar($dados);
-
-            if (!$id) {
-                $this->view('animais/reportar', [
-                    'erro' => 'Não foi possível salvar a denúncia.',
-                    'old'  => $_POST,
-                ]);
-                return;
-            }
-
-            // GALERIA
-            if (!empty($paths)) {
-                $this->animalModel->adicionarImagens((string)$id, $paths);
-            }
-
-            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode((string)$id));
+            $this->processarNovaDenuncia();
             return;
         }
 
-        // GET
         $this->view('animais/reportar');
     }
 
     /**
-     * Normaliza o array $_FILES para facilitar o processamento de uploads múltiplos.
-     * Retorna um array de arquivos no formato padrão do PHP.
+     * Processa a criação de uma nova denúncia.
      */
-    private function normalizarArquivos(string $field): array
+    private function processarNovaDenuncia(): void
     {
-        if (empty($_FILES[$field])) return [];
-
-        $f = $_FILES[$field];
-
-        // caso seja input single (name="foto")
-        if (!is_array($f['name'])) {
-            return [[
-                'name'     => $f['name'] ?? '',
-                'type'     => $f['type'] ?? '',
-                'tmp_name' => $f['tmp_name'] ?? '',
-                'error'    => $f['error'] ?? UPLOAD_ERR_NO_FILE,
-                'size'     => $f['size'] ?? 0,
-            ]];
+        $dadosFormulario = $this->extrairDadosFormulario();
+        
+        $erroValidacao = $this->validarDadosDenuncia($dadosFormulario);
+        if ($erroValidacao !== null) {
+            $this->view('animais/reportar', [
+                'erro' => $erroValidacao,
+                'old'  => $_POST,
+            ]);
+            return;
         }
 
-        // caso seja input multiple (name="fotos[]")
-        $out = [];
-        $count = count($f['name']);
-        for ($i = 0; $i < $count; $i++) {
-            $out[] = [
-                'name'     => $f['name'][$i] ?? '',
-                'type'     => $f['type'][$i] ?? '',
-                'tmp_name' => $f['tmp_name'][$i] ?? '',
-                'error'    => $f['error'][$i] ?? UPLOAD_ERR_NO_FILE,
-                'size'     => $f['size'][$i] ?? 0,
-            ];
+        try {
+            $caminhosFotos = $this->salvarUploadsFotosDenuncia('fotos', 5, 2 * 1024 * 1024);
+        } catch (\Throwable $excecao) {
+            $this->view('animais/reportar', [
+                'erro' => $excecao->getMessage(),
+                'old'  => $_POST,
+            ]);
+            return;
         }
-        return $out;
+
+        $descricaoConstruida = $this->construirDescricaoLocalizacao(
+            $dadosFormulario['rua'],
+            $dadosFormulario['numero'],
+            $dadosFormulario['bairro'],
+            $dadosFormulario['cidade'],
+            $dadosFormulario['estado'],
+            $dadosFormulario['cep']
+        );
+
+        $fotoCapa = $caminhosFotos[0] ?? null;
+
+        $dadosParaSalvar = [
+            'usuario_id'  => (string)($_SESSION['usuario_id'] ?? ''),
+            'foto'        => $fotoCapa,
+            'titulo'      => $dadosFormulario['titulo'],
+            'descricao'   => $dadosFormulario['descricao'] !== '' ? $dadosFormulario['descricao'] : null,
+            'especie'     => $dadosFormulario['especie'],
+            'cor'         => $dadosFormulario['cor'] !== '' ? $dadosFormulario['cor'] : null,
+            'condicao'    => $dadosFormulario['condicao'] !== '' ? $dadosFormulario['condicao'] : null,
+            'localizacao' => $descricaoConstruida !== '' ? $descricaoConstruida : null,
+        ];
+
+        $denunciaId = $this->animalModel->criar($dadosParaSalvar);
+
+        if (!$denunciaId) {
+            $this->view('animais/reportar', [
+                'erro' => 'Não foi possível salvar a denúncia.',
+                'old'  => $_POST,
+            ]);
+            return;
+        }
+
+        if (!empty($caminhosFotos)) {
+            $this->animalModel->adicionarImagens($denunciaId, $caminhosFotos);
+        }
+
+        $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId));
     }
 
     /**
-     * Salva múltiplos arquivos enviados via upload em public/uploads/animais.
-     * Retorna um array com os caminhos relativos dos arquivos salvos.
+     * Extrai e padroniza dados do formulário de denúncia.
+     */
+    private function extrairDadosFormulario(): array
+    {
+        return [
+            'titulo'      => trim((string)($_POST['titulo'] ?? '')),
+            'especie'     => trim((string)($_POST['especie'] ?? '')),
+            'cor'         => trim((string)($_POST['cor'] ?? '')),
+            'condicao'    => trim((string)($_POST['condicao'] ?? '')),
+            'descricao'   => trim((string)($_POST['descricao'] ?? '')),
+            'cep'         => trim((string)($_POST['cep'] ?? '')),
+            'rua'         => trim((string)($_POST['rua'] ?? '')),
+            'numero'      => trim((string)($_POST['numero'] ?? '')),
+            'bairro'      => trim((string)($_POST['bairro'] ?? '')),
+            'cidade'      => trim((string)($_POST['cidade'] ?? '')),
+            'estado'      => trim((string)($_POST['estado'] ?? '')),
+        ];
+    }
+
+    /**
+     * Valida campos obrigatórios de uma denúncia.
+     * Retorna mensagem de erro ou null se tudo estiver válido.
+     */
+    private function validarDadosDenuncia(array $dados): ?string
+    {
+        if ($dados['titulo'] === '') {
+            return 'Informe o título da denúncia.';
+        }
+
+        if ($dados['especie'] === '') {
+            return 'Espécie é obrigatória.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Constrói a descrição de localização a partir dos campos de endereço.
+     */
+    private function construirDescricaoLocalizacao(
+        string $rua,
+        string $numero,
+        string $bairro,
+        string $cidade,
+        string $estado,
+        string $cep
+    ): string
+    {
+        $partesEndereco = array_filter([
+            $rua !== '' ? $rua : null,
+            $numero !== '' ? "nº {$numero}" : null,
+            $bairro !== '' ? $bairro : null,
+            ($cidade !== '' || $estado !== '') ? trim(implode(' - ', array_filter([$cidade, $estado]))) : null,
+            $cep !== '' ? "CEP {$cep}" : null,
+        ]);
+
+        return implode(', ', $partesEndereco);
+    }
+
+    /**
+     * Normaliza array $_FILES para facilitar processamento de uploads múltiplos.
+     */
+    private function normalizarArquivosUpload(string $nomeCampo): array
+    {
+        if (empty($_FILES[$nomeCampo])) {
+            return [];
+        }
+
+        $arquivos = $_FILES[$nomeCampo];
+
+        // Input simples (name="arquivo")
+        if (!is_array($arquivos['name'])) {
+            return [[
+                'name'     => $arquivos['name'] ?? '',
+                'type'     => $arquivos['type'] ?? '',
+                'tmp_name' => $arquivos['tmp_name'] ?? '',
+                'error'    => $arquivos['error'] ?? UPLOAD_ERR_NO_FILE,
+                'size'     => $arquivos['size'] ?? 0,
+            ]];
+        }
+
+        // Input múltiplo (name="arquivos[]")
+        $resultado = [];
+        $quantidade = count($arquivos['name'] ?? []);
+        for ($indice = 0; $indice < $quantidade; $indice++) {
+            $resultado[] = [
+                'name'     => $arquivos['name'][$indice] ?? '',
+                'type'     => $arquivos['type'][$indice] ?? '',
+                'tmp_name' => $arquivos['tmp_name'][$indice] ?? '',
+                'error'    => $arquivos['error'][$indice] ?? UPLOAD_ERR_NO_FILE,
+                'size'     => $arquivos['size'][$indice] ?? 0,
+            ];
+        }
+        return $resultado;
+    }
+
+    /**
+     * Salva arquivos de fotos de denúncias em public/uploads/animais.
+     * Retorna array com caminhos relativos dos arquivos salvos.
      * Lança RuntimeException em caso de erro.
      */
-    private function salvarUploadsAnimais(string $field, int $maxFiles = 5, int $maxSizeBytes = 2097152): array
+    private function salvarUploadsFotosDenuncia(string $nomeCampo, int $maxArquivos = 5, int $tamanhoMaximoBytes = 2097152): array
     {
-        $uploadDir = dirname(__DIR__, 2) . '/public/uploads/animais';
-        $debugFile = dirname(__DIR__, 2) . '/public/uploads/debug_upload.txt';
+        $caminhoUpload = dirname(__DIR__, 2) . '/public/uploads/animais';
+        $caminhoDebug = dirname(__DIR__, 2) . '/public/uploads/debug_upload.txt';
 
-        // cria pasta base do debug
-        $baseUploads = dirname(__DIR__, 2) . '/public/uploads';
-        if (!is_dir($baseUploads)) @mkdir($baseUploads, 0775, true);
+        // Garantir pasta base
+        $caminhoBaseUploads = dirname(__DIR__, 2) . '/public/uploads';
+        if (!is_dir($caminhoBaseUploads)) {
+            @mkdir($caminhoBaseUploads, 0775, true);
+        }
 
-        $debug = [
+        $informacoesDebug = [
             'time' => date('c'),
-            'field' => $field,
-            'uploadDir' => $uploadDir,
-            'is_dir(uploadDir)' => is_dir($uploadDir),
-            'is_writable(uploadDir)' => is_writable($uploadDir),
+            'field' => $nomeCampo,
+            'uploadDir' => $caminhoUpload,
+            'is_dir(uploadDir)' => is_dir($caminhoUpload),
+            'is_writable(uploadDir)' => is_writable($caminhoUpload),
             'ini' => [
                 'file_uploads' => ini_get('file_uploads'),
                 'upload_max_filesize' => ini_get('upload_max_filesize'),
@@ -324,135 +314,138 @@ final class AnimalController extends Controller
                 'upload_tmp_dir' => ini_get('upload_tmp_dir'),
             ],
             '_FILES_keys' => array_keys($_FILES ?? []),
-            '_FILES_field' => $_FILES[$field] ?? null,
+            '_FILES_field' => $_FILES[$nomeCampo] ?? null,
         ];
 
-        // garante pasta de destino
-        if (!is_dir($uploadDir)) {
-            @mkdir($uploadDir, 0775, true);
+        // Cria pasta de destino
+        if (!is_dir($caminhoUpload)) {
+            @mkdir($caminhoUpload, 0775, true);
         }
-        $debug['after_mkdir_is_dir'] = is_dir($uploadDir);
-        $debug['after_mkdir_is_writable'] = is_writable($uploadDir);
+        $informacoesDebug['after_mkdir_is_dir'] = is_dir($caminhoUpload);
+        $informacoesDebug['after_mkdir_is_writable'] = is_writable($caminhoUpload);
 
-        @file_put_contents($debugFile, json_encode($debug, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n\n", FILE_APPEND);
+        @file_put_contents($caminhoDebug, json_encode($informacoesDebug, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n\n", FILE_APPEND);
 
-        // normaliza e filtra vazios
-        $files = $this->normalizarArquivos($field);
-        $files = array_values(array_filter($files, fn($x) => ($x['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE));
+        // Normaliza e filtra arquivos sem erro
+        $arquivos = $this->normalizarArquivosUpload($nomeCampo);
+        $arquivos = array_values(array_filter($arquivos, fn($arq) => ($arq['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE));
 
-        if (count($files) === 0) {
-            @file_put_contents($debugFile, "SEM ARQUIVOS: \$files vazio após normalização.\n\n", FILE_APPEND);
+        if (count($arquivos) === 0) {
+            @file_put_contents($caminhoDebug, "SEM ARQUIVOS: array vazio após normalização.\n\n", FILE_APPEND);
             return [];
         }
 
-        if (count($files) > $maxFiles) {
-            throw new RuntimeException("Selecione no máximo {$maxFiles} imagens.");
+        if (count($arquivos) > $maxArquivos) {
+            throw new RuntimeException("Selecione no máximo {$maxArquivos} imagens.");
         }
 
-        if (!is_writable($uploadDir)) {
-            throw new RuntimeException("Sem permissão para salvar em: {$uploadDir}");
+        if (!is_writable($caminhoUpload)) {
+            throw new RuntimeException("Sem permissão para salvar em: {$caminhoUpload}");
         }
 
-        $paths = [];
-        $seen  = [];
+        $caminhosSalvos = [];
+        $arquivosProcessados = [];
 
-        foreach ($files as $idx => $file) {
-            $size = (int)($file['size'] ?? 0);
+        foreach ($arquivos as $indiceArquivo => $arquivo) {
+            $tamanho = (int)($arquivo['size'] ?? 0);
 
-            @file_put_contents($debugFile, "FILE {$idx}: " . json_encode([
-                'name' => $file['name'] ?? null,
-                'size' => $size,
-                'error' => $file['error'] ?? null,
-                'tmp_name' => $file['tmp_name'] ?? null,
-                'is_uploaded_file' => isset($file['tmp_name']) ? is_uploaded_file($file['tmp_name']) : null,
+            @file_put_contents($caminhoDebug, "ARQUIVO {$indiceArquivo}: " . json_encode([
+                'name' => $arquivo['name'] ?? null,
+                'size' => $tamanho,
+                'error' => $arquivo['error'] ?? null,
+                'tmp_name' => $arquivo['tmp_name'] ?? null,
+                'is_uploaded_file' => isset($arquivo['tmp_name']) ? is_uploaded_file($arquivo['tmp_name']) : null,
             ], JSON_PRETTY_PRINT) . "\n", FILE_APPEND);
 
-            if ($size > $maxSizeBytes) {
-                $mb = (int)($maxSizeBytes / 1024 / 1024);
-                throw new RuntimeException("Cada imagem deve ter no máximo {$mb}MB.");
+            if ($tamanho > $tamanhoMaximoBytes) {
+                $megabytes = (int)($tamanhoMaximoBytes / 1024 / 1024);
+                throw new RuntimeException("Cada imagem deve ter no máximo {$megabytes}MB.");
             }
 
-            $key = ($file['name'] ?? '') . '|' . (string)$size;
-            if (isset($seen[$key])) continue;
-            $seen[$key] = true;
+            $chaveDeduplicacao = ($arquivo['name'] ?? '') . '|' . (string)$tamanho;
+            if (isset($arquivosProcessados[$chaveDeduplicacao])) {
+                continue;
+            }
+            $arquivosProcessados[$chaveDeduplicacao] = true;
 
-            $tmp = (string)($file['tmp_name'] ?? '');
-            if ($tmp === '' || !is_uploaded_file($tmp)) {
+            $caminhoTemporario = (string)($arquivo['tmp_name'] ?? '');
+            if ($caminhoTemporario === '' || !is_uploaded_file($caminhoTemporario)) {
                 throw new RuntimeException("Arquivo inválido recebido no upload (tmp_name inválido).");
             }
 
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mime  = $finfo->file($tmp);
+            $detectorTipo = new finfo(FILEINFO_MIME_TYPE);
+            $tipoMime = $detectorTipo->file($caminhoTemporario);
 
-            $allowed = [
+            $tiposPermitidos = [
                 'image/jpeg' => 'jpg',
                 'image/png'  => 'png',
                 'image/webp' => 'webp',
             ];
-            if (!isset($allowed[$mime])) {
-                throw new RuntimeException("Formato inválido ({$mime}). Use JPG, PNG ou WEBP.");
+            if (!isset($tiposPermitidos[$tipoMime])) {
+                throw new RuntimeException("Formato inválido ({$tipoMime}). Use JPG, PNG ou WEBP.");
             }
 
-            $ext = $allowed[$mime];
-            $fileName = bin2hex(random_bytes(16)) . '.' . $ext;
-            $dest = $uploadDir . '/' . $fileName;
+            $extensao = $tiposPermitidos[$tipoMime];
+            $nomeArquivo = bin2hex(random_bytes(16)) . '.' . $extensao;
+            $caminhoDestino = $caminhoUpload . '/' . $nomeArquivo;
 
-            $ok = move_uploaded_file($tmp, $dest);
-            @file_put_contents($debugFile, "MOVE {$idx}: ok=" . ($ok ? '1' : '0') . " dest={$dest}\n\n", FILE_APPEND);
+            $movimentoSucesso = move_uploaded_file($caminhoTemporario, $caminhoDestino);
+            @file_put_contents($caminhoDebug, "MOVE {$indiceArquivo}: ok=" . ($movimentoSucesso ? '1' : '0') . " dest={$caminhoDestino}\n\n", FILE_APPEND);
 
-            if (!$ok) {
-                $last = error_get_last();
-                @file_put_contents($debugFile, "MOVE FAILED last_error=" . json_encode($last) . "\n\n", FILE_APPEND);
+            if (!$movimentoSucesso) {
+                $ultimoErro = error_get_last();
+                @file_put_contents($caminhoDebug, "MOVE FAILED last_error=" . json_encode($ultimoErro) . "\n\n", FILE_APPEND);
                 throw new RuntimeException("Falha ao salvar a imagem no servidor (move_uploaded_file).");
             }
 
-            $paths[] = 'uploads/animais/' . $fileName;
+            $caminhosSalvos[] = 'uploads/animais/' . $nomeArquivo;
         }
 
-        return $paths;
+        return $caminhosSalvos;
     }
 
+    /**
+     * Exclui uma denúncia (apenas dono ou admin).
+     */
     public function excluir(): void
     {
         $this->requireAuth();
 
-        // Segurança mínima: não excluir via GET
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             exit('Método não permitido.');
         }
 
-        $id = (string)($_POST['id'] ?? '');
-        if ($id === '') {
+        $denunciaId = (string)($_POST['id'] ?? '');
+        if ($denunciaId === '') {
             $this->redirect('/index.php?c=animal&a=listar');
             return;
         }
 
         $usuarioId = (string)($_SESSION['usuario_id'] ?? '');
+        $tipoUsuario = (string)($_SESSION['tipo_usuario'] ?? '');
+        $ehAdministrador = in_array(mb_strtolower($tipoUsuario), ['admin', 'administrador'], true);
 
-        // Ajuste conforme seu projeto (ex.: 'admin', 'Administrador', etc.)
-        $tipo = (string)($_SESSION['tipo_usuario'] ?? '');
-        $isAdmin = (mb_strtolower($tipo) === 'admin' || mb_strtolower($tipo) === 'administrador');
+        $denunciaDonoId = $this->animalModel->buscarDonoId($denunciaId);
 
-        // Dono da denúncia
-        $donoId = $this->animalModel->buscarDonoId($id);
-
-        if ($donoId === null) {
+        if ($denunciaDonoId === null) {
             $this->redirect('/index.php?c=animal&a=listar');
             return;
         }
 
-        // Regra: admin OU dono
-        if (!$isAdmin && $donoId !== $usuarioId) {
+        $temPermissaoExcluir = $ehAdministrador || $denunciaDonoId === $usuarioId;
+        if (!$temPermissaoExcluir) {
             http_response_code(403);
             exit('Você não tem permissão para excluir esta denúncia.');
         }
 
-        $this->animalModel->excluir($id);
-
+        $this->animalModel->excluir($denunciaId);
         $this->redirect('/index.php?c=animal&a=listar');
     }
 
+    /**
+     * Atualiza o status de uma denúncia com registro de histórico.
+     */
     public function atualizarStatus(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -460,79 +453,61 @@ final class AnimalController extends Controller
             exit('Método não permitido.');
         }
 
-        // Exige login
         if (empty($_SESSION['usuario_id'])) {
             $_SESSION['flash_error'] = 'Você precisa estar logado para alterar o status.';
             $this->redirect('/index.php?c=auth&a=login');
             return;
         }
 
-        $usuarioId    = (string)$_SESSION['usuario_id'];
-        $tipoUsuario  = (string)($_SESSION['tipo_usuario'] ?? 'Comum');
+        $usuarioId = (string)$_SESSION['usuario_id'];
+        $tipoUsuario = (string)($_SESSION['tipo_usuario'] ?? 'Comum');
+        $denunciaId = trim((string)($_POST['animal_id'] ?? ''));
+        $novoStatus = trim((string)($_POST['status'] ?? ''));
 
-        $animalId     = trim((string)($_POST['animal_id'] ?? ''));
-        $novoStatus   = trim((string)($_POST['status'] ?? ''));
-
-        if ($animalId === '' || $novoStatus === '') {
+        if ($denunciaId === '' || $novoStatus === '') {
             $_SESSION['flash_error'] = 'Dados inválidos para atualizar status.';
             $this->redirect('/index.php?c=animal&a=listar');
             return;
         }
 
-        // Busca status atual
-        $animal = $this->animalModel->buscarPorId($animalId);
-        if (!$animal) {
+        $informacaoDenuncia = $this->animalModel->buscarPorId($denunciaId);
+        if (!$informacaoDenuncia) {
             $_SESSION['flash_error'] = 'Denúncia não encontrada.';
             $this->redirect('/index.php?c=animal&a=listar');
             return;
         }
 
-        $statusAtual = (string)($animal['status'] ?? 'Aguardando');
+        $statusAtual = (string)($informacaoDenuncia['status'] ?? 'Aguardando');
 
-        // Evita gravar histórico duplicado
         if ($novoStatus === $statusAtual) {
             $_SESSION['flash_success'] = 'Nenhuma alteração: o status já estava definido.';
-            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($animalId));
+            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId));
             return;
         }
 
-        // Regra por tipo de usuário (à prova de UI)
-        $permitidos = [];
-        if ($tipoUsuario === 'ONG') {
-            $permitidos = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
-        } elseif ($tipoUsuario === 'Autoridade') {
-            $permitidos = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
-        } elseif ($tipoUsuario === 'Admin') {
-            $permitidos = ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'];
-        } else {
-            // Comum (e qualquer outro)
-            $_SESSION['flash_error'] = 'Você não tem permissão para alterar o status.';
-            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($animalId));
-            return;
-        }
+        $statusDisponiveisPorTipo = self::StatusPermitidosPorTipo[$tipoUsuario] ?? [];
 
-        if (!in_array($novoStatus, $permitidos, true)) {
+        if (!in_array($novoStatus, $statusDisponiveisPorTipo, true)) {
             $_SESSION['flash_error'] = 'Status inválido para o seu perfil.';
-            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($animalId));
+            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId));
             return;
         }
 
-        // Atualiza status + grava histórico (transação no model)
-        $ok = $this->animalModel->atualizarStatusComHistorico(
-            $animalId,
+        $atualizacaoSucesso = $this->animalModel->atualizarStatusComHistorico(
+            $denunciaId,
             $statusAtual,
             $novoStatus,
             $usuarioId
         );
 
-        if (!$ok) {
+        if (!$atualizacaoSucesso) {
             $_SESSION['flash_error'] = 'Falha ao atualizar o status. Tente novamente.';
-            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($animalId));
+            $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId));
             return;
         }
 
         $_SESSION['flash_success'] = 'Status atualizado com sucesso.';
-        $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($animalId));
+        $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId));
     }
 
 }

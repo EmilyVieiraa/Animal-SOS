@@ -3,72 +3,80 @@ declare(strict_types=1);
 
 require_once APP_PATH . 'helpers/view_helpers.php';
 
-$sel = (string)($status ?? '');
+$filtroStatus = (string)($status ?? '');
+$paginaAtual = max(1, (int)($page ?? 1));
+$totalPaginas = max(1, (int)($totalPages ?? 1));
+$listaDenuncias = is_array($denuncias ?? null) ? $denuncias : [];
 
-$page       = max(1, (int)($page ?? 1));
-$totalPages = max(1, (int)($totalPages ?? 1));
+$possuiDenuncias = !empty($listaDenuncias);
+$deveExibirPaginacao = $totalPaginas > 1;
 
-// Gera URL de página com parâmetros de filtro
+$janelaPaginacao = 2;
+$paginaInicial = max(1, $paginaAtual - $janelaPaginacao);
+$paginaFinal = min($totalPaginas, $paginaAtual + $janelaPaginacao);
 
+$primeiraPagina = 1;
+$paginaAnterior = max(1, $paginaAtual - 1);
+$proximaPagina = min($totalPaginas, $paginaAtual + 1);
+
+$urlPrimeiraPagina = pageUrl($primeiraPagina, $filtroStatus);
+$urlPaginaAnterior = pageUrl($paginaAnterior, $filtroStatus);
+$urlProximaPagina = pageUrl($proximaPagina, $filtroStatus);
+$urlUltimaPagina = pageUrl($totalPaginas, $filtroStatus);
 ?>
 
-<section class="catalog-hero">
-  <h1 class="catalog-title">Denúncias de Animais</h1>
-  <p class="catalog-subtitle">Veja relatos enviados pela comunidade e acompanhe atualizações.</p>
+<section class="denuncia-listagem__cabecalho">
+  <h1 class="denuncia-listagem__titulo">Denúncias de Animais</h1>
+  <p class="denuncia-listagem__subtitulo">Veja relatos enviados pela comunidade e acompanhe atualizações.</p>
 </section>
 
-<?php if (empty($animais)): ?>
-  <div class="empty-state">
+<?php if (!$possuiDenuncias): ?>
+  <div class="denuncia-listagem__vazio">
     <h2>Nenhuma denúncia encontrada.</h2>
   </div>
 <?php else: ?>
-
   <div class="container">
-    <section class="catalog-grid">
-      <?php foreach ($animais as $a): ?>
-        <?php
-          $variant = 'default';
-          require __DIR__ . '/../partials/_animal_card.php';
-        ?>
-      <?php endforeach; ?>
+    <section class="denuncia-listagem__grade">
+      <?php foreach ($listaDenuncias as $denuncia):
+        $dadosDenuncia = $denuncia;
+        $variacaoCard = 'default';
+        require __DIR__ . '/../partials/_animal_card.php';
+      endforeach; ?>
     </section>
   </div>
 
-  <?php
-  $window = 2;
-  $start = max(1, $page - $window);
-  $end   = min($totalPages, $page + $window);
-  ?>
+  <?php if ($deveExibirPaginacao): ?>
+    <nav class="denuncia-paginacao" aria-label="Paginação">
+      <a class="denuncia-paginacao__link <?= $paginaAtual <= 1 ? 'denuncia-paginacao__link--desabilitada' : '' ?>"
+         href="<?= $paginaAtual <= 1 ? '#' : h($urlPrimeiraPagina) ?>">Primeira</a>
 
-  <?php if ($totalPages > 1): ?>
-    <nav class="pagination-ui" aria-label="Paginação">
-      <a class="pg-link <?= $page <= 1 ? 'disabled' : '' ?>"
-         href="<?= $page <= 1 ? '#' : h(pageUrl(1, $sel)) ?>">First</a>
+      <a class="denuncia-paginacao__link <?= $paginaAtual <= 1 ? 'denuncia-paginacao__link--desabilitada' : '' ?>"
+         href="<?= $paginaAtual <= 1 ? '#' : h($urlPaginaAnterior) ?>">Anterior</a>
 
-      <a class="pg-link <?= $page <= 1 ? 'disabled' : '' ?>"
-         href="<?= $page <= 1 ? '#' : h(pageUrl($page - 1, $sel)) ?>">Prev</a>
-
-      <?php if ($start > 1): ?>
-        <a class="pg-page" href="<?= h(pageUrl(1, $sel)) ?>">1</a>
-        <?php if ($start > 2): ?><span class="pg-ellipsis">…</span><?php endif; ?>
+      <?php if ($paginaInicial > 1): ?>
+        <a class="denuncia-paginacao__pagina" href="<?= h($urlPrimeiraPagina) ?>">1</a>
+        <?php if ($paginaInicial > 2): ?>
+          <span class="denuncia-paginacao__reticencias">…</span>
+        <?php endif; ?>
       <?php endif; ?>
 
-      <?php for ($p = $start; $p <= $end; $p++): ?>
-        <a class="pg-page <?= $p === $page ? 'active' : '' ?>"
-           href="<?= h(pageUrl($p, $sel)) ?>"><?= (int)$p ?></a>
+      <?php for ($numeroPagina = $paginaInicial; $numeroPagina <= $paginaFinal; $numeroPagina++): ?>
+        <a class="denuncia-paginacao__pagina <?= $numeroPagina === $paginaAtual ? 'denuncia-paginacao__pagina--ativa' : '' ?>"
+           href="<?= h(pageUrl($numeroPagina, $filtroStatus)) ?>"><?= (int)$numeroPagina ?></a>
       <?php endfor; ?>
 
-      <?php if ($end < $totalPages): ?>
-        <?php if ($end < $totalPages - 1): ?><span class="pg-ellipsis">…</span><?php endif; ?>
-        <a class="pg-page" href="<?= h(pageUrl($totalPages, $sel)) ?>"><?= (int)$totalPages ?></a>
+      <?php if ($paginaFinal < $totalPaginas): ?>
+        <?php if ($paginaFinal < $totalPaginas - 1): ?>
+          <span class="denuncia-paginacao__reticencias">…</span>
+        <?php endif; ?>
+        <a class="denuncia-paginacao__pagina" href="<?= h($urlUltimaPagina) ?>"><?= (int)$totalPaginas ?></a>
       <?php endif; ?>
 
-      <a class="pg-link <?= $page >= $totalPages ? 'disabled' : '' ?>"
-         href="<?= $page >= $totalPages ? '#' : h(pageUrl($page + 1, $sel)) ?>">Next</a>
+      <a class="denuncia-paginacao__link <?= $paginaAtual >= $totalPaginas ? 'denuncia-paginacao__link--desabilitada' : '' ?>"
+         href="<?= $paginaAtual >= $totalPaginas ? '#' : h($urlProximaPagina) ?>">Próxima</a>
 
-      <a class="pg-link <?= $page >= $totalPages ? 'disabled' : '' ?>"
-         href="<?= $page >= $totalPages ? '#' : h(pageUrl($totalPages, $sel)) ?>">Last</a>
+      <a class="denuncia-paginacao__link <?= $paginaAtual >= $totalPaginas ? 'denuncia-paginacao__link--desabilitada' : '' ?>"
+         href="<?= $paginaAtual >= $totalPaginas ? '#' : h($urlUltimaPagina) ?>">Última</a>
     </nav>
   <?php endif; ?>
-
 <?php endif; ?>

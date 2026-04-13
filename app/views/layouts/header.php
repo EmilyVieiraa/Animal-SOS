@@ -1,5 +1,4 @@
 <?php
-$basePath = '';
 $logado = !empty($_SESSION['usuario_id']);
 ?>
 <!DOCTYPE html>
@@ -9,7 +8,7 @@ $logado = !empty($_SESSION['usuario_id']);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($title ?? 'Animal SOS', ENT_QUOTES, 'UTF-8') ?></title>
 
-  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=3">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=4">
 
   <link rel="icon" href="<?= BASE_URL ?>/assets/img/img_logo.png" type="image/png">
 
@@ -23,8 +22,7 @@ $logado = !empty($_SESSION['usuario_id']);
   <div class="container header-content">
 
     <div class="logo">
-      <img src="<?= $basePath ?>/assets/img/img_logo.png" class="logo-icon" alt="Ícone Animal SOS">
-      <span class="logo-text">Animal SOS</span>
+      <img src="<?= BASE_URL ?>/assets/img/img_logo.png" class="logo-icon" alt="Ícone Animal SOS">      <span class="logo-text">Animal SOS</span>
     </div>
 
     <!-- Toggle do menu responsivo (sem JS) -->
