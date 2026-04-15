@@ -3,18 +3,34 @@ declare(strict_types=1);
 
 final class Usuario extends Model
 {
+    private function buscarUsuarioUnico(string $consultaSql, string $nomeParametro, string $valor): ?array
+    {
+        $declaracao = $this->prepare($consultaSql);
+        $declaracao->bindValue($nomeParametro, $valor);
+        $declaracao->execute();
+
+        $usuario = $declaracao->fetch();
+        return $usuario ?: null;
+    }
+
+    private function textoOuNulo($valor): ?string
+    {
+        $texto = trim((string)$valor);
+        return $texto !== '' ? $texto : null;
+    }
+
+    private function gerarHashSenha(string $senha): string
+    {
+        return password_hash($senha, PASSWORD_DEFAULT);
+    }
+
     /**
      * Busca usuário por e-mail (para login e recuperação de senha).
      */
     public function encontrarPorEmail(string $email): ?array
     {
-        $sql = "SELECT * FROM usuarios WHERE email = :email LIMIT 1";
-        $stmt = $this->prepare($sql);
-        $stmt->bindValue(':email', $email);
-        $stmt->execute();
-
-        $usuario = $stmt->fetch();
-        return $usuario ?: null;
+        $consultaSql = "SELECT * FROM usuarios WHERE email = :email LIMIT 1";
+        return $this->buscarUsuarioUnico($consultaSql, ':email', $email);
     }
 
     /**
@@ -22,13 +38,8 @@ final class Usuario extends Model
      */
     public function encontrarPorId(string $id): ?array
     {
-        $sql = "SELECT * FROM usuarios WHERE id = :id LIMIT 1";
-        $stmt = $this->prepare($sql);
-        $stmt->bindValue(':id', $id);
-        $stmt->execute();
-
-        $usuario = $stmt->fetch();
-        return $usuario ?: null;
+        $consultaSql = "SELECT * FROM usuarios WHERE id = :id LIMIT 1";
+        return $this->buscarUsuarioUnico($consultaSql, ':id', $id);
     }
 
     /**
@@ -38,10 +49,9 @@ final class Usuario extends Model
      */
     public function criar(array $dados): bool
     {
-        // Gera o UUID uma única vez e reutiliza (formato padrão: 36 chars com hífens)
         $usuarioId = UuidHelper::generateStandard();
 
-        $sql = "INSERT INTO usuarios (
+        $consultaSql = "INSERT INTO usuarios (
             id, nome, email, senha_hash, telefone, tipo_usuario,
             foto_perfil, cep, bairro, rua, numero, cidade, estado, ativo
         )
@@ -50,26 +60,25 @@ final class Usuario extends Model
             :foto_perfil, :cep, :bairro, :rua, :numero, :cidade, :estado, TRUE
         )";
 
-        $stmt = $this->prepare($sql);
+        $declaracao = $this->prepare($consultaSql);
 
-        return $stmt->execute([
+        return $declaracao->execute([
             ':id'           => $usuarioId,
             ':nome'         => $dados['nome'],
             ':email'        => $dados['email'],
-            ':senha_hash'   => password_hash((string)$dados['senha'], PASSWORD_DEFAULT),
-            ':telefone'     => $dados['telefone'] !== '' ? $dados['telefone'] : null,
+            ':senha_hash'   => $this->gerarHashSenha((string)$dados['senha']),
+            ':telefone'     => $this->textoOuNulo($dados['telefone'] ?? ''),
             ':tipo_usuario' => $dados['tipo_usuario'] ?? 'Comum',
-            ':foto_perfil' => ($dados['foto_perfil'] ?? '') !== '' ? $dados['foto_perfil'] : null,
+            ':foto_perfil'  => $this->textoOuNulo($dados['foto_perfil'] ?? ''),
 
-            ':cep'    => ($dados['cep'] ?? '') !== '' ? $dados['cep'] : null,
-            ':bairro' => ($dados['bairro'] ?? '') !== '' ? $dados['bairro'] : null,
-            ':rua'    => ($dados['rua'] ?? '') !== '' ? $dados['rua'] : null,
-            ':numero' => ($dados['numero'] ?? '') !== '' ? $dados['numero'] : null,
-            ':cidade' => ($dados['cidade'] ?? '') !== '' ? $dados['cidade'] : null,
-            ':estado' => ($dados['estado'] ?? '') !== '' ? $dados['estado'] : null,
+            ':cep'    => $this->textoOuNulo($dados['cep'] ?? ''),
+            ':bairro' => $this->textoOuNulo($dados['bairro'] ?? ''),
+            ':rua'    => $this->textoOuNulo($dados['rua'] ?? ''),
+            ':numero' => $this->textoOuNulo($dados['numero'] ?? ''),
+            ':cidade' => $this->textoOuNulo($dados['cidade'] ?? ''),
+            ':estado' => $this->textoOuNulo($dados['estado'] ?? ''),
 
         ]);
-
     }
 
     /**
@@ -77,7 +86,7 @@ final class Usuario extends Model
      */
     public function atualizarPerfil(string $id, array $dados): bool
     {
-        $sql = "UPDATE usuarios
+        $consultaSql = "UPDATE usuarios
                 SET nome = :nome,
                     telefone = :telefone,
                     rua = :rua,
@@ -90,17 +99,17 @@ final class Usuario extends Model
                     mostrar_whatsapp = :mostrar_whatsapp
                 WHERE id = :id";
 
-        $stmt = $this->prepare($sql);
+        $declaracao = $this->prepare($consultaSql);
 
-        return $stmt->execute([
+        return $declaracao->execute([
             ':nome'             => $dados['nome'],
-            ':telefone'         => $dados['telefone'] ?? null,
-            ':rua'              => $dados['rua'] ?? null,
-            ':numero'           => $dados['numero'] ?? null,
-            ':bairro'           => $dados['bairro'] ?? null,
-            ':cidade'           => $dados['cidade'] ?? null,
-            ':estado'           => $dados['estado'] ?? null,
-            ':cep'              => $dados['cep'] ?? null,
+            ':telefone'         => $this->textoOuNulo($dados['telefone'] ?? null),
+            ':rua'              => $this->textoOuNulo($dados['rua'] ?? null),
+            ':numero'           => $this->textoOuNulo($dados['numero'] ?? null),
+            ':bairro'           => $this->textoOuNulo($dados['bairro'] ?? null),
+            ':cidade'           => $this->textoOuNulo($dados['cidade'] ?? null),
+            ':estado'           => $this->textoOuNulo($dados['estado'] ?? null),
+            ':cep'              => $this->textoOuNulo($dados['cep'] ?? null),
             ':mostrar_email'    => (int)($dados['mostrar_email'] ?? 0),
             ':mostrar_whatsapp' => (int)($dados['mostrar_whatsapp'] ?? 0),
             ':id'               => $id,
@@ -108,40 +117,15 @@ final class Usuario extends Model
     }
 
     /**
-     * ALTERAR SENHA COM SENHA ATUAL (usuário logado).
-     * (Seu método, mantido)
-     */
-    public function alterarSenha(string $id, string $senhaAtual, string $novaSenha): bool
-    {
-        $usuario = $this->encontrarPorId($id);
-
-        if (!$usuario || !isset($usuario['senha_hash'])) {
-            return false;
-        }
-
-        if (!password_verify($senhaAtual, (string)$usuario['senha_hash'])) {
-            return false;
-        }
-
-        $sql = "UPDATE usuarios SET senha_hash = :senha WHERE id = :id";
-        $stmt = $this->prepare($sql);
-
-        return $stmt->execute([
-            ':senha' => password_hash($novaSenha, PASSWORD_DEFAULT),
-            ':id'    => $id,
-        ]);
-    }
-
-    /**
      * Atualiza o HASH da senha SEM exigir a senha atual.
      * Uso: recuperação de senha (token).
      */
-    public function atualizarSenhaHash(string $usuarioId, string $senhaHash): bool
+    private function atualizarSenhaHash(string $usuarioId, string $senhaHash): bool
     {
-        $sql = "UPDATE usuarios SET senha_hash = :hash WHERE id = :id";
-        $stmt = $this->prepare($sql);
+        $consultaSql = "UPDATE usuarios SET senha_hash = :hash WHERE id = :id";
+        $declaracao = $this->prepare($consultaSql);
 
-        return $stmt->execute([
+        return $declaracao->execute([
             ':hash' => $senhaHash,
             ':id'   => $usuarioId,
         ]);
@@ -155,7 +139,7 @@ final class Usuario extends Model
     {
         return $this->atualizarSenhaHash(
             $usuarioId,
-            password_hash($novaSenha, PASSWORD_DEFAULT)
+            $this->gerarHashSenha($novaSenha)
         );
     }
 }

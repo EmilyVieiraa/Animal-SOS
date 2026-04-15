@@ -58,8 +58,8 @@ $routes = [
 
     '/mapa'      => ['MapaController', 'index'],
 
-    '/perfil'    => ['UsuarioController', 'perfil'],
-    '/senha'     => ['UsuarioController', 'senha'],
+    '/perfil'    => ['UsuarioController', 'meuPerfil'],
+    '/senha'     => ['AuthController', 'esqueciSenha'],
 
     '/denuncias' => ['AnimalController', 'listar'],
     '/reportar'  => ['AnimalController', 'reportar'],

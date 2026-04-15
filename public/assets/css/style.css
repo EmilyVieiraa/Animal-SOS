@@ -1947,16 +1947,6 @@ body:has(#cadastroToggle:checked){
   width: 100%;
 }
 
-.perfil-publico .perfil-tag{
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid transparent;
-}
-
 html, body{
   overflow-x: hidden;
 }
@@ -1998,6 +1988,31 @@ html, body{
   padding-bottom: 42px;
   position: relative;
   z-index: 2;
+}
+
+.perfil-form{
+  margin: 0;
+}
+
+.perfil-alert{
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.perfil-alert--error{
+  background: #ffe8e8;
+  border-color: #ffb3b3;
+  color: #b00020;
+}
+
+.perfil-alert--success{
+  background: #e9ffe8;
+  border-color: #b7ffb3;
+  color: #1b5e20;
 }
 
 /* Card principal */
@@ -2049,12 +2064,8 @@ html, body{
   gap: 16px;
 }
 
-.perfil-name{
-  margin: 0;
-  font-family: var(--font-title);
-  font-size: 28px;
-  letter-spacing: .2px;
-  color: var(--animal-primary);
+.perfil-main{
+  min-width: 0;
 }
 
 /* Botão "Ver denúncias" */
@@ -2070,14 +2081,6 @@ html, body{
   font-weight: 700;
   border: 1px solid rgba(0,0,0,.10);
   box-shadow: 0 10px 20px rgba(0,0,0,.12);
-}
-
-/* Meta (cidade + badge autor) */
-.perfil-meta{
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 /* Pills informativas */
@@ -2105,15 +2108,6 @@ html, body{
   color: rgba(0,0,0,.62);
 }
 
-.perfil-contact{
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-  color: rgba(0,0,0,.72);
-}
-
 .perfil-followline{
   margin-top: 8px;
   display: flex;
@@ -2129,6 +2123,10 @@ html, body{
 .perfil-count strong{
   color: var(--animal-primary);
   font-weight: 800;
+}
+
+.perfil-tipo{
+  margin-top: 14px;
 }
 
 .perfil-contato{
@@ -2167,20 +2165,20 @@ a.c-value:hover{
   color: var(--text);
 }
 
-.c-ico{
+.perfil-contato-list .c-ico{
   width: 20px;
   text-align: center;
   opacity: 1;
   color: var(--animal-primary);
 }
 
-.c-label{
+.perfil-contato-list .c-label{
   font-weight: 700;
   min-width: 70px;
   color: var(--animal-primary);
 }
 
-.c-value{
+.perfil-contato-list .c-value{
   color: rgba(122,79,50,.75);
   line-height: 1.4;
 }

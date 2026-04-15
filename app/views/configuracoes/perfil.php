@@ -3,25 +3,23 @@ declare(strict_types=1);
 require_once APP_PATH . 'helpers/view_helpers.php';
 
 $isOwnProfile = !empty($isOwnProfile);
-$isPublico = !$isOwnProfile;
-$modo = $isPublico ? 'publico' : 'meu';
+$isPublicProfile = !$isOwnProfile;
 
 /* ===== Campos base ===== */
-$nome   = (string)($usuario['nome'] ?? 'Usuário');
+$nomeUsuario = (string)($usuario['nome'] ?? 'Usuário');
 $cidade = (string)($usuario['cidade'] ?? '');
 $estado = (string)($usuario['estado'] ?? '');
-$local  = trim($cidade . ($estado ? ' - ' . $estado : ''));
-$inic = mb_strtoupper(mb_substr($nome, 0, 1));
+$inicialNomeUsuario = mb_strtoupper(mb_substr($nomeUsuario, 0, 1));
 $denunciasCount = (int)($denunciasCount ?? 0);
 $mostrarEmail = !empty($usuario['mostrar_email']);
 $mostrarWhats = !empty($usuario['mostrar_whatsapp']);
 
 $email = trim((string)($usuario['email'] ?? ''));
-$tel   = trim((string)($usuario['telefone'] ?? ''));
+$telefone = trim((string)($usuario['telefone'] ?? ''));
 
 /* regra: se for meu perfil, pode mostrar; se for público, depende das flags */
-$podeVerEmail = (!empty($isOwnProfile) || $mostrarEmail) && $email !== '';
-$podeVerWhats = (!empty($isOwnProfile) || $mostrarWhats) && $tel !== '';
+$podeVerEmail = ($isOwnProfile || $mostrarEmail) && $email !== '';
+$podeVerWhats = ($isOwnProfile || $mostrarWhats) && $telefone !== '';
 
 /* ===== Tipo de usuário + Endereço (ajuste conforme seu BD) ===== */
 $tipoUsuario = (string)($usuario['tipo_usuario'] ?? 'Comum');
@@ -31,46 +29,112 @@ $numero = trim((string)($usuario['numero'] ?? ''));
 $bairro = trim((string)($usuario['bairro'] ?? ''));
 
 $fotoPerfil = (string)($usuario['foto_perfil'] ?? '');
+$listaDenuncias = is_array($denuncias ?? null) ? $denuncias : [];
 
 $enderecoLinha1 = trim($rua . ($numero !== '' ? ', ' . $numero : ''));
 $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($estado !== '' ? ' - ' . $estado : ''));
+
+$normalizarDadosDenuncia = static function (array $denuncia, string $nomeAutor): array {
+  return [
+    'id' => (string)($denuncia['id'] ?? ''),
+    'foto' => (string)($denuncia['foto'] ?? ''),
+    'titulo' => (string)($denuncia['titulo'] ?? 'Denúncia'),
+    'especie' => (string)($denuncia['especie'] ?? 'Animal'),
+    'condicao' => (string)($denuncia['condicao'] ?? ''),
+    'descricao' => (string)($denuncia['descricao'] ?? ''),
+    'data_hora' => (string)($denuncia['data_hora'] ?? ''),
+    'status' => (string)($denuncia['status'] ?? ''),
+    'usuario_nome' => $nomeAutor,
+  ];
+};
+
+$renderizarHeroPerfil = static function (string $urlVoltar): void {
+  ?>
+  <div class="perfil-hero">
+    <div class="container perfil-hero-inner">
+      <a class="perfil-back" href="<?= h($urlVoltar) ?>">← Voltar</a>
+    </div>
+  </div>
+  <?php
+};
+
+$renderizarAvatarPerfil = static function (string $fotoPerfil, string $nomeUsuario, string $inicialNomeUsuario): void {
+  ?>
+  <div class="perfil-avatar" aria-label="Avatar do usuário">
+    <?php if ($fotoPerfil && file_exists(PUBLIC_PATH . '/' . $fotoPerfil)): ?>
+      <img src="<?= h(BASE_URL) ?>/<?= h($fotoPerfil) ?>" alt="<?= h($nomeUsuario) ?>" class="perfil-avatar-img">
+    <?php else: ?>
+      <span><?= h($inicialNomeUsuario) ?></span>
+    <?php endif; ?>
+  </div>
+  <?php
+};
+
+$renderizarContadorDenuncias = static function (int $denunciasCount): void {
+  ?>
+  <div class="perfil-followline">
+    <span class="perfil-count">
+      <strong><?= $denunciasCount ?></strong> Denúncias publicadas
+    </span>
+  </div>
+  <?php
+};
+
+$renderizarSecaoDenuncias = static function (
+  array $listaDenuncias,
+  string $titulo,
+  string $textoComItens,
+  string $textoSemItens,
+  string $nomeUsuario,
+  callable $normalizarDadosDenuncia,
+  string $variacaoCard
+): void {
+  ?>
+  <section class="perfil-denuncias-card">
+
+    <div class="perfil-denuncias-head">
+      <h2><?= h($titulo) ?></h2>
+      <p class="muted">
+        <?= !empty($listaDenuncias) ? h($textoComItens) : h($textoSemItens) ?>
+      </p>
+    </div>
+
+    <?php if (!empty($listaDenuncias)): ?>
+      <div class="perfil-denuncias-grid">
+        <?php foreach ($listaDenuncias as $denuncia): ?>
+          <?php
+            $dadosDenuncia = $normalizarDadosDenuncia($denuncia, $nomeUsuario);
+            require APP_PATH . 'views/partials/_animal_card.php';
+          ?>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+
+  </section>
+  <?php
+};
 ?>
 
-<?php if ($isPublico): ?>
+<?php if ($isPublicProfile): ?>
 
 <section class="perfil-publico">
 
-  <div class="perfil-hero">
-    <div class="container perfil-hero-inner">
-      <a class="perfil-back" href="javascript:history.back()">← Voltar</a>
-    </div>
-  </div>
+  <?php $renderizarHeroPerfil('javascript:history.back()'); ?>
 
   <div class="container perfil-wrap">
 
     <article class="perfil-card-main">
 
-      <div class="perfil-avatar" aria-label="Avatar do usuário">
-        <?php if ($fotoPerfil && file_exists(PUBLIC_PATH . '/' . $fotoPerfil)): ?>
-          <img src="<?= h(BASE_URL) ?>/<?= h($fotoPerfil) ?>" alt="<?= h($nome) ?>" class="perfil-avatar-img">
-        <?php else: ?>
-          <span><?= h($inic) ?></span>
-        <?php endif; ?>
-      </div>
+      <?php $renderizarAvatarPerfil($fotoPerfil, $nomeUsuario, $inicialNomeUsuario); ?>
 
       <div class="perfil-main">
 
         <!-- Nome -->
         <div class="perfil-top">
-          <h1 class="perfil-name"><?= h($nome) ?></h1>
+          <h1 class="perfil-name"><?= h($nomeUsuario) ?></h1>
         </div>
 
-        <!-- Contador -->
-        <div class="perfil-followline">
-          <span class="perfil-count">
-            <strong><?= $denunciasCount ?></strong> Denúncias publicadas
-          </span>
-        </div>
+        <?php $renderizarContadorDenuncias($denunciasCount); ?>
 
         <!-- Contato (sempre no mesmo layout; valor muda) -->
         <div class="perfil-contato">
@@ -94,7 +158,7 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
               <span class="c-label">WhatsApp:</span>
               <span class="c-value">
                 <?php if ($podeVerWhats): ?>
-                  <?= h($tel) ?>
+                  <?= h($telefone) ?>
                 <?php else: ?>
                   <span class="contato-bloqueado">Não disponível publicamente</span>
                 <?php endif; ?>
@@ -136,67 +200,18 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
 
     </article>
 
-    <section class="perfil-denuncias-card">
-
-      <div class="perfil-denuncias-head">
-        <h2>Denúncias deste usuário</h2>
-        <p class="muted">
-          <?= !empty($denuncias) ? 'Veja as denúncias publicadas por ' . h($nome) . '.' : 'Nenhuma denúncia publicada até o momento.' ?>
-        </p>
-      </div>
-
-      <?php if (!empty($denuncias)): ?>
-        <div class="perfil-denuncias-grid">
-
-          <?php foreach ($denuncias as $d): ?>
-            <?php
-              /**
-               * Normaliza o array da denúncia ($d) para o formato esperado pelo partial ($a)
-               * Campos esperados pelo partial:
-               * id, foto, titulo, especie, condicao, descricao, data_hora, status, usuario_nome
-               */
-
-              $dadosDenuncia = [];
-
-              // id
-              $dadosDenuncia['id'] = (string)($d['id'] ?? '');
-
-              // foto (vários nomes possíveis no seu array)
-              $dadosDenuncia['foto'] = (string)($d['foto'] ?? $d['imagem_url'] ?? $d['imagem'] ?? $d['caminho_imagem'] ?? '');
-
-              // título
-              $dadosDenuncia['titulo'] = (string)($d['titulo'] ?? 'Denúncia');
-
-              // especie (no perfil você tinha "tipo", então caímos nele se não existir "especie")
-              $dadosDenuncia['especie'] = (string)($d['especie'] ?? $d['tipo'] ?? 'Animal');
-
-              // condição (se existir)
-              $dadosDenuncia['condicao'] = (string)($d['condicao'] ?? '');
-
-              // descrição
-              $dadosDenuncia['descricao'] = (string)($d['descricao'] ?? '');
-
-              // data/hora (ajuste conforme seu retorno real)
-              $dadosDenuncia['data_hora'] = (string)($d['data_hora'] ?? $d['data_cadastro'] ?? $d['criado_em'] ?? '');
-
-              // status
-              $dadosDenuncia['status'] = (string)($d['status'] ?? '');
-
-              // nome do autor (no perfil, o autor é o próprio dono do perfil)
-              $dadosDenuncia['usuario_nome'] = $nome;
-
-              // Variante grande no perfil
-              $variacaoCard = 'lg';
-
-              // Renderiza o card reutilizável
-              require APP_PATH . 'views/partials/_animal_card.php';
-            ?>
-          <?php endforeach; ?>
-
-        </div>
-      <?php endif; ?>
-
-    </section>
+    <?php
+      $variacaoCard = 'lg';
+      $renderizarSecaoDenuncias(
+        $listaDenuncias,
+        'Denúncias deste usuário',
+        'Veja as denúncias publicadas por ' . $nomeUsuario . '.',
+        'Nenhuma denúncia publicada até o momento.',
+        $nomeUsuario,
+        $normalizarDadosDenuncia,
+        $variacaoCard
+      );
+    ?>
 
   </div><!-- /container -->
 </section>
@@ -206,11 +221,7 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
 
 <section class="perfil-publico perfil-meu">
 
-  <div class="perfil-hero">
-    <div class="container perfil-hero-inner">
-      <a class="perfil-back" href="<?= h(BASE_URL) ?>/index.php?c=paginas&a=home">← Voltar</a>
-    </div>
-  </div>
+  <?php $renderizarHeroPerfil(BASE_URL . '/index.php?c=paginas&a=home'); ?>
 
   <div class="container perfil-wrap">
 
@@ -225,13 +236,7 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
     <form method="post" class="perfil-form">
       <article class="perfil-card-main">
 
-        <div class="perfil-avatar" aria-label="Avatar do usuário">
-          <?php if ($fotoPerfil && file_exists(PUBLIC_PATH . '/' . $fotoPerfil)): ?>
-            <img src="<?= h(BASE_URL) ?>/<?= h($fotoPerfil) ?>" alt="<?= h($nome) ?>" class="perfil-avatar-img">
-          <?php else: ?>
-            <span><?= h($inic) ?></span>
-          <?php endif; ?>
-        </div>
+        <?php $renderizarAvatarPerfil($fotoPerfil, $nomeUsuario, $inicialNomeUsuario); ?>
 
         <div class="perfil-main">
 
@@ -262,12 +267,7 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
               </div>
           </div>
 
-          <!-- Contador -->
-          <div class="perfil-followline">
-            <span class="perfil-count">
-              <strong><?= $denunciasCount ?></strong> Denúncias publicadas
-            </span>
-          </div>
+          <?php $renderizarContadorDenuncias($denunciasCount); ?>
 
           <!-- Dados (Tipo de usuário, Email, Privacidade, WhatsApp e Endereço) -->
           <div class="perfil-contato">
@@ -419,38 +419,18 @@ $enderecoLinha2 = trim($bairro . ($cidade !== '' ? ' • ' . $cidade : '') . ($e
     </form>
 
     <!-- Denúncias (igual ao público, reaproveita o mesmo bloco que você já tem) -->
-    <section class="perfil-denuncias-card">
-
-      <div class="perfil-denuncias-head">
-        <h2>Minhas denúncias</h2>
-        <p class="muted">
-          <?= !empty($denuncias) ? 'Acompanhe as denúncias publicadas por você.' : 'Você ainda não publicou denúncias.' ?>
-        </p>
-      </div>
-
-      <?php if (!empty($denuncias)): ?>
-        <div class="perfil-denuncias-grid">
-          <?php foreach ($denuncias as $d): ?>
-            <?php
-              $dadosDenuncia = [];
-              $dadosDenuncia['id'] = (string)($d['id'] ?? '');
-              $dadosDenuncia['foto'] = (string)($d['foto'] ?? $d['imagem_url'] ?? $d['imagem'] ?? $d['caminho_imagem'] ?? '');
-              $dadosDenuncia['titulo'] = (string)($d['titulo'] ?? 'Denúncia');
-              $dadosDenuncia['especie'] = (string)($d['especie'] ?? $d['tipo'] ?? 'Animal');
-              $dadosDenuncia['condicao'] = (string)($d['condicao'] ?? '');
-              $dadosDenuncia['descricao'] = (string)($d['descricao'] ?? '');
-              $dadosDenuncia['data_hora'] = (string)($d['data_hora'] ?? $d['data_cadastro'] ?? $d['criado_em'] ?? '');
-              $dadosDenuncia['status'] = (string)($d['status'] ?? '');
-              $dadosDenuncia['usuario_nome'] = $nome;
-
-              $variacaoCard = 'default'; // mantém igual ao listar (pode trocar se quiser)
-              require APP_PATH . 'views/partials/_animal_card.php';
-            ?>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-
-    </section>
+    <?php
+      $variacaoCard = 'default';
+      $renderizarSecaoDenuncias(
+        $listaDenuncias,
+        'Minhas denúncias',
+        'Acompanhe as denúncias publicadas por você.',
+        'Você ainda não publicou denúncias.',
+        $nomeUsuario,
+        $normalizarDadosDenuncia,
+        $variacaoCard
+      );
+    ?>
 
   </div><!-- /container -->
 </section>

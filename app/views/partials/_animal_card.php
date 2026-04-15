@@ -9,6 +9,10 @@ declare(strict_types=1);
  */
 
 $variacaoCard = (string)($variacaoCard ?? 'default');
+if ($variacaoCard !== 'default' && $variacaoCard !== 'lg') {
+  $variacaoCard = 'default';
+}
+
 $dadosDenuncia = is_array($dadosDenuncia ?? null) ? $dadosDenuncia : [];
 
 $idDenuncia = (string)($dadosDenuncia['id'] ?? '');
@@ -17,9 +21,9 @@ $tituloDenuncia = (string)($dadosDenuncia['titulo'] ?? '');
 $especieAnimal = (string)($dadosDenuncia['especie'] ?? 'Animal');
 $condicaoAnimal = (string)($dadosDenuncia['condicao'] ?? '');
 $descricaoDenuncia = (string)($dadosDenuncia['descricao'] ?? '');
-$dataRegistro = formatDateTime((string)($dadosDenuncia['data_hora'] ?? ''));
+$dataRegistro = formatDateTime((string)($dadosDenuncia['data_hora'] ?? $dadosDenuncia['data_cadastro'] ?? $dadosDenuncia['criado_em'] ?? ''));
 $statusDenuncia = (string)($dadosDenuncia['status'] ?? '');
-$nomeAutor = (string)($dadosDenuncia['usuario_nome'] ?? $dadosDenuncia['nome'] ?? 'Usuário');
+$nomeAutor = (string)($dadosDenuncia['usuario_nome'] ?? $dadosDenuncia['autor_nome'] ?? $dadosDenuncia['nome'] ?? 'Usuário');
 
 $possuiId = ($idDenuncia !== '');
 
@@ -30,6 +34,7 @@ $urlDetalhes = $possuiId
 $descricaoLimpa = trim((string)preg_replace('/\s+/', ' ', $descricaoDenuncia));
 $limiteDescricao = ($variacaoCard === 'lg') ? 220 : 110;
 $descricaoCurta = mb_strimwidth($descricaoLimpa, 0, $limiteDescricao, '...', 'UTF-8');
+$tituloExibicao = ($tituloDenuncia !== '' ? $tituloDenuncia : $especieAnimal);
 
 $classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grande' : '');
 ?>
@@ -61,10 +66,10 @@ $classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grand
     <h3 class="denuncia-card__titulo">
       <?php if ($possuiId): ?>
         <a href="<?= h($urlDetalhes) ?>">
-          <?= h($tituloDenuncia !== '' ? $tituloDenuncia : $especieAnimal) ?>
+          <?= h($tituloExibicao) ?>
         </a>
       <?php else: ?>
-        <?= h($tituloDenuncia !== '' ? $tituloDenuncia : $especieAnimal) ?>
+        <?= h($tituloExibicao) ?>
       <?php endif; ?>
     </h3>
 
