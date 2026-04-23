@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+if (!defined('CSRF_CONTEXTO_COMENTARIO_ADICIONAR')) {
+    define('CSRF_CONTEXTO_COMENTARIO_ADICIONAR', 'comentario_adicionar');
+}
+
 if (!function_exists('h')) {
     function h(mixed $valor): string
     {

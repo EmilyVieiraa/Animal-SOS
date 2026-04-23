@@ -30,6 +30,9 @@ $imagemPlaceholderTela = (string)($imagemPlaceholder ?? (BASE_URL . '/assets/img
 // URL de retorno para login
 $urlRetorno = '/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId);
 
+// Dados de comentários (contrato vindo do controller/model)
+$listaComentarios = is_array($comentarios ?? null) ? $comentarios : [];
+
 // Imagem principal
 $imagemPrincipal = '';
 if (!empty($imagens) && is_array($imagens)) {
@@ -256,19 +259,19 @@ $mostrarFormularioStatus = $usuarioLogado
             <h3 class="denuncia-detalhe__bloco-titulo">Comentários</h3>
           </div>
 
-          <?php if (!empty($comentarios)): ?>
+          <?php if (!empty($listaComentarios)): ?>
             <div class="denuncia-detalhe__lista">
-              <?php foreach ($comentarios as $comentario): ?>
+              <?php foreach ($listaComentarios as $comentarioItem): ?>
                 <div class="denuncia-detalhe__item">
                   <div class="denuncia-detalhe__item-topo">
-                    <strong><?= h($comentario['usuario_nome'] ?? 'Usuário') ?></strong>
+                    <strong><?= h($comentarioItem['usuario_nome'] ?? 'Usuário') ?></strong>
                     <span class="denuncia-detalhe__item-data">
-                      <?= h(formatDateTime((string)($comentario['data_hora'] ?? ''))) ?>
+                      <?= h(formatDateTime((string)($comentarioItem['data_hora'] ?? ''))) ?>
                     </span>
                   </div>
 
                   <div class="denuncia-detalhe__item-corpo">
-                    <?= nl2br(h($comentario['mensagem'] ?? '')) ?>
+                    <?= nl2br(h($comentarioItem['mensagem'] ?? '')) ?>
                   </div>
                 </div>
               <?php endforeach; ?>
@@ -296,11 +299,15 @@ $mostrarFormularioStatus = $usuarioLogado
                 action="<?= BASE_URL ?>/index.php?c=comentario&a=adicionar"
                 class="denuncia-detalhe__form-comentario"
               >
+                <?= csrfInput(CSRF_CONTEXTO_COMENTARIO_ADICIONAR) ?>
                 <input type="hidden" name="animal_id" value="<?= h($denunciaId) ?>">
 
+                <label for="mensagem-comentario-detalhes">Mensagem</label>
                 <textarea
+                  id="mensagem-comentario-detalhes"
                   name="mensagem"
                   rows="3"
+                  maxlength="1000"
                   required
                   placeholder="Publicar comentário"
                 ></textarea>

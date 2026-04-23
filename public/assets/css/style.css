@@ -1983,6 +1983,7 @@ body:has(#cadastroToggle:checked){
   border-top: 1px solid rgba(0,0,0,.10);
 }
 
+/* Bloco de comentário: subtítulo e link para login */
 .denuncia-detalhe__subtitulo{
   margin: 0 0 8px;
   font-size: 14px;
@@ -2002,6 +2003,14 @@ body:has(#cadastroToggle:checked){
   text-decoration: underline;
 }
 
+/* Bloco de comentário: formulário */
+.denuncia-detalhe__form-comentario label{
+  display: inline-block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: rgba(0,0,0,.72);
+}
+
 .denuncia-detalhe__form-comentario textarea{
   width: 100%;
   border: 1px solid rgba(0,0,0,.18);
@@ -2009,6 +2018,11 @@ body:has(#cadastroToggle:checked){
   padding: 10px 12px;
   font-family: var(--font-body);
   resize: vertical;
+}
+
+.denuncia-detalhe__form-comentario textarea:focus{
+  outline: 2px solid rgba(44, 104, 148, .25);
+  outline-offset: 1px;
 }
 
 .denuncia-detalhe__form-comentario-acoes{
