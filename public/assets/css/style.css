@@ -501,9 +501,9 @@ footer{
 .footer-bottom .copyright p{ margin: 0; }
 
 /* =========================
-   Login (CSS puro)
+  Auth - Login Modal (fluxo principal)
 ========================= */
-.login-overlay{
+.auth-login-sobreposicao{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.6);
@@ -517,7 +517,7 @@ footer{
   z-index: 999;
 }
 
-#loginToggle:checked ~ .login-overlay{
+#loginToggle:checked ~ .auth-login-sobreposicao{
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -527,13 +527,13 @@ body:has(#loginToggle:checked){
   overflow: hidden;
 }
 
-.overlay-close{
+.auth-login-fechar-fundo{
   position: fixed;
   inset: 0;
   cursor: pointer;
 }
 
-.login-modal{
+.auth-login-modal{
   background: #fff;
   width: min(420px, 92vw);
   border-radius: var(--radius);
@@ -543,7 +543,7 @@ body:has(#loginToggle:checked){
   z-index: 1000;
 }
 
-.login-modal h2{
+.auth-login-modal h2{
   margin: 0 0 6px;
   font-family: var(--font-title);
   font-weight: 400;
@@ -551,14 +551,14 @@ body:has(#loginToggle:checked){
   color: #2b211a;
 }
 
-.login-modal p{
+.auth-login-modal p{
   margin: 0 0 16px;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
 }
 
-.close-btn{
+.auth-login-fechar{
   position: absolute;
   top: 12px;
   right: 12px;
@@ -574,24 +574,24 @@ body:has(#loginToggle:checked){
   transition: background .12s ease, border-color .12s ease;
 }
 
-.close-btn:hover{
+.auth-login-fechar:hover{
   background: rgba(0,0,0,.05);
   border-color: rgba(0,0,0,.08);
 }
 
-.login-modal form{
+.auth-login-modal form{
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Campos */
-.field{
+/* Campos do formulário de login */
+.auth-login-campo{
   width: 100%;
   margin-bottom: 14px;
 }
 
-.field label{
+.auth-login-campo label{
   display: block;
   margin-bottom: 6px;
   font-weight: 700;
@@ -599,7 +599,7 @@ body:has(#loginToggle:checked){
   color: #3a3a3a;
 }
 
-.field input{
+.auth-login-campo input{
   width: 100%;
   height: 42px;
   border-radius: 10px;
@@ -609,34 +609,41 @@ body:has(#loginToggle:checked){
   font-size: 14px;
 }
 
-.field input:focus{
+.auth-login-campo input:focus{
   border-color: rgba(122,79,50,.65);
   box-shadow: 0 0 0 4px rgba(122,79,50,.12);
 }
 
-.login-modal form .btn.btn-primary{
+.auth-login-modal form .btn.btn-primary{
   width: 220px;
   max-width: 100%;
   margin-top: 6px;
 }
 
-.forgot-password{
+.auth-login-acoes{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-login-recuperacao{
   margin-top: 12px;
   text-align: center;
 }
 
-.forgot-password a{
+.auth-login-recuperacao a{
   font-size: 13px;
   font-weight: 600;
   color: var(--animal-primary);
   text-decoration: none;
 }
 
-.forgot-password a:hover{
+.auth-login-recuperacao a:hover{
   text-decoration: underline;
 }
 
-/*Alertas (mensagens) email existente*/
+/* Alertas compartilhados do módulo */
 .alert{
   padding: 10px 12px;
   border-radius: 10px;
@@ -657,9 +664,9 @@ body:has(#loginToggle:checked){
 }
 
 /* =========================
-   Cadastro (toggle)
+  Auth - Cadastro Modal (fluxo principal)
 ========================= */
-.modal-overlay{
+.auth-cadastro-sobreposicao{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.6);
@@ -675,7 +682,7 @@ body:has(#loginToggle:checked){
   z-index: 999;
 }
 
-#cadastroToggle:checked ~ #modalCadastro{
+#cadastroToggle:checked ~ .auth-cadastro-sobreposicao{
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -685,7 +692,7 @@ body:has(#cadastroToggle:checked){
   overflow: hidden;
 }
 
-.modal-container{
+.auth-cadastro-modal{
   background: #fff;
   width: min(560px, 92vw);
   border-radius: var(--radius);
@@ -702,28 +709,28 @@ body:has(#cadastroToggle:checked){
 
 }
 
-/* Header do cadastro */
-.modal-header{
+/* Header do modal de cadastro */
+.auth-cadastro-cabecalho{
   display: flex;
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 16px;
 }
 
-.modal-header h2{
+.auth-cadastro-cabecalho h2{
   margin: 0 0 4px;
   font-family: var(--font-title);
   font-weight: 400;
   font-size: 30px;
 }
 
-.modal-subtitle{
+.auth-cadastro-subtitulo{
   margin: 0;
   color: var(--muted);
   font-size: 14px;
 }
 
-.close-modal{
+.auth-cadastro-fechar{
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
@@ -743,21 +750,21 @@ body:has(#cadastroToggle:checked){
   transition: background .12s ease, border-color .12s ease;
 }
 
-.close-modal:hover{
+.auth-cadastro-fechar:hover{
   background: rgba(0,0,0,.08);
 }
 
-.modal-form .form-group{ margin-bottom: 14px; }
+.auth-cadastro-grupo{ margin-bottom: 14px; }
 
-.modal-form label{
+.auth-cadastro-formulario label{
   display: block;
   font-weight: 700;
   font-size: 13px;
   margin-bottom: 6px;
 }
 
-.modal-form input,
-.modal-form select{
+.auth-cadastro-formulario input,
+.auth-cadastro-formulario select{
   width: 100%;
   height: 42px;
   border-radius: 10px;
@@ -769,30 +776,34 @@ body:has(#cadastroToggle:checked){
   background: #fff;
 }
 
-.modal-form input:focus,
-.modal-form select:focus{
+.auth-cadastro-formulario input:focus,
+.auth-cadastro-formulario select:focus{
   border-color: rgba(122,79,50,.65);
   box-shadow: 0 0 0 4px rgba(122,79,50,.12);
 }
 
-.helper-text{
+.auth-cadastro-ajuda{
   margin: 6px 0 0;
   font-size: 12px;
   color: rgba(0,0,0,.55);
 }
 
-.modal-footer{
+.auth-cadastro-ajuda--erro{
+  color: #c62828;
+}
+
+.auth-cadastro-rodape{
   display:flex;
   justify-content:flex-end;
   gap: 10px;
   margin-top: 16px;
 }
 
-.select-wrapper{
+.auth-cadastro-select{
   position: relative;
 }
 
-.select-wrapper select{
+.auth-cadastro-select select{
   width: 100%;
   height: 42px;
   padding: 0 36px 0 12px; /* espaço para a seta custom */
@@ -807,7 +818,7 @@ body:has(#cadastroToggle:checked){
   -moz-appearance: none;
 }
 
-.select-wrapper::after{
+.auth-cadastro-select::after{
   content: '▼';
   font-size: 0.7rem;
   color: #888;
@@ -820,8 +831,8 @@ body:has(#cadastroToggle:checked){
   cursor: pointer;
 }
 
-/*Upload com preview (Cadastro)*/
-#modalCadastro .file-input-hidden{
+/* Upload com preview (cadastro) */
+.auth-cadastro-modal .auth-cadastro-arquivo-oculto{
   position: absolute;
   left: -9999px;
   width: 1px;
@@ -829,23 +840,22 @@ body:has(#cadastroToggle:checked){
   opacity: 0;
 }
 
-#modalCadastro .upload-label{
+.auth-cadastro-upload-rotulo{
   display: block;
   font-weight: 700;
   font-size: 13px;
   margin-bottom: 10px;
 }
 
-#modalCadastro .upload-section.centered{
+.auth-cadastro-upload--centralizado{
   display: flex;
   justify-content: center;
   margin-bottom: 22px;
 }
 
-#modalCadastro .upload-box.circle{
+.auth-cadastro-upload-caixa{
   width: 110px;
   height: 110px;
-  border-radius: 50%;
   border: 2px dashed #ccc;
   display: grid;
   place-items: center;
@@ -857,44 +867,49 @@ body:has(#cadastroToggle:checked){
   user-select: none;
 }
 
-#modalCadastro .upload-box.circle:hover{
+.auth-cadastro-upload-caixa--circular{
+  border-radius: 50%;
+}
+
+.auth-cadastro-upload-caixa:hover{
   border-color: var(--animal-primary);
   background: #fff;
 }
 
-#modalCadastro #imagePreview{
+.auth-cadastro-modal #imagePreview{
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: none;
 }
 
-#modalCadastro #imagePreviewText{
+.auth-cadastro-modal #imagePreviewText{
   color: #999;
   font-size: .85rem;
   text-align: center;
   pointer-events: none;
 }
 
-#modalCadastro .upload-box.circle.has-image #imagePreview{
+.auth-cadastro-upload-caixa--com-imagem #imagePreview{
   display: block;
 }
 
-#modalCadastro .upload-box.circle.has-image #imagePreviewText{
+.auth-cadastro-upload-caixa--com-imagem #imagePreviewText{
   display: none;
 }
 
 /* =========================
-   Tela esqueci Senha
+  Auth - Telas de Recuperação e Redefinição
+  (esqueci_senha e redefinir_senha)
 ========================= */
 
-.forgot-page{
+.auth-recuperacao-pagina{
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.forgot-container{
+.auth-recuperacao-container{
   flex: 1;
   width: min(520px, calc(100% - 40px));
   margin: 0 auto;
@@ -905,24 +920,24 @@ body:has(#cadastroToggle:checked){
   text-align: center;
 }
 
-.forgot-container h1{
+.auth-recuperacao-container h1{
   color: var(--animal-primary);
   font-family: var(--font-title);
   font-weight: 700;
   margin: 0 0 10px;
 }
 
-.forgot-container p{
+.auth-recuperacao-container p{
   font-weight: 400;
 }
 
-.forgot-subtitle{
+.auth-recuperacao-subtitulo{
   color: rgba(0,0,0,.65);
   margin: 10px 0 18px;
   font-weight: 400;
 }
 
-.forgot-form{
+.auth-recuperacao-formulario{
   display: grid;
   gap: 10px;
   margin-top: 10px;
@@ -934,70 +949,177 @@ body:has(#cadastroToggle:checked){
   justify-items: stretch;
 }
 
-.forgot-form label{
+.auth-recuperacao-formulario label{
   font-size: 13px;
   color: var(--animal-primary);
   text-align: left;
-  font-weight: 400; /* não negrito */
+  font-weight: 400;
 }
 
-.forgot-form input{
-  width: 400px;      /* <-- AQUI aumenta visivelmente */
-  max-width: 100%;   /* <-- não estoura no celular */
+.auth-recuperacao-formulario input{
+  width: 400px;
+  max-width: 100%;
   height: 42px;
   border-radius: 10px;
   border: 1px solid rgba(0,0,0,.18);
   padding: 0 12px;
   outline: none;
-  margin: 0 auto;    /* <-- mantém centralizado */
+  margin: 0 auto;
   display: block;
 }
 
-.forgot-form input:focus{
+.auth-recuperacao-formulario input:focus{
   border-color: rgba(122,79,50,.65);
   box-shadow: 0 0 0 4px rgba(122,79,50,.12);
 }
 
-.forgot-form button{
+.auth-recuperacao-formulario button{
   width: fit-content;
   justify-self: center;
   padding: 10px 18px;
   border-radius: 12px;
 }
 
-/* Se estiver usando .btn global e ele forçar largura/padding */
-.forgot-form .btn{
+.auth-recuperacao-formulario .btn{
   width: fit-content;
 }
 
-.forgot-actions{
+.auth-recuperacao-campo{
+  display: grid;
+  gap: 6px;
+}
+
+.auth-recuperacao-acoes{
   margin-top: 14px;
 }
 
-.forgot-actions a{
+.auth-recuperacao-acoes a{
   color: var(--animal-primary);
-  font-weight: 400; /* não negrito */
+  font-weight: 400;
   text-decoration: none;
 }
 
-.forgot-actions a:hover{
+.auth-recuperacao-acoes a:hover{
   text-decoration: underline;
 }
 
-.msg{
+.auth-mensagem{
   margin: 12px 0;
   font-weight: 700;
 }
-.msg-error{ color: #c62828; }
-.msg-success{ color: #2e7d32; }
 
-.debug-link{
+.auth-mensagem--erro{ color: #c62828; }
+
+.auth-mensagem--sucesso{ color: #2e7d32; }
+
+.auth-recuperacao-link-debug{
   margin-top: 10px;
 }
 
-.debug-link a{
+.auth-recuperacao-link-debug a{
   color: var(--animal-primary);
   word-break: break-all;
+}
+
+/* =========================
+  Auth - Telas legadas de acesso
+========================= */
+
+.auth-acesso-pagina{
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.auth-acesso-cartao{
+  width: min(460px, 100%);
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 24px;
+}
+
+.auth-acesso-cartao--cadastro{
+  width: min(520px, 100%);
+}
+
+.auth-acesso-titulo{
+  margin: 0 0 8px;
+  font-family: var(--font-title);
+  font-size: 32px;
+  font-weight: 400;
+  color: #2b211a;
+}
+
+.auth-acesso-subtitulo{
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.auth-acesso-mensagem{
+  margin: 0 0 14px;
+  font-weight: 700;
+}
+
+.auth-acesso-mensagem--erro{
+  color: #c62828;
+}
+
+.auth-acesso-mensagem--sucesso{
+  color: #2e7d32;
+}
+
+.auth-acesso-formulario{
+  display: grid;
+  gap: 14px;
+}
+
+.auth-acesso-campo{
+  display: grid;
+  gap: 6px;
+}
+
+.auth-acesso-campo label{
+  font-size: 13px;
+  font-weight: 700;
+  color: #3a3a3a;
+}
+
+.auth-acesso-campo input,
+.auth-acesso-campo select{
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 0 12px;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: #fff;
+}
+
+.auth-acesso-campo input:focus,
+.auth-acesso-campo select:focus{
+  border-color: rgba(122,79,50,.65);
+  box-shadow: 0 0 0 4px rgba(122,79,50,.12);
+}
+
+.auth-acesso-links{
+  margin: 16px 0 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.auth-acesso-links a{
+  color: var(--animal-primary);
+  text-decoration: none;
+}
+
+.auth-acesso-links a:hover{
+  text-decoration: underline;
 }
 
 /* ==================================================

@@ -3,17 +3,19 @@ declare(strict_types=1);
 
 final class Usuario extends Model
 {
-    private function buscarUsuarioUnico(string $consultaSql, string $nomeParametro, string $valor): ?array
+    private const TIPOS_USUARIO_PERMITIDOS = ['Comum', 'ONG', 'Autoridade'];
+
+    private function buscarUsuarioUnicoPorParametro(string $consultaSql, string $nomeParametro, string $valorParametro): ?array
     {
         $declaracao = $this->prepare($consultaSql);
-        $declaracao->bindValue($nomeParametro, $valor);
+        $declaracao->bindValue($nomeParametro, $valorParametro);
         $declaracao->execute();
 
-        $usuario = $declaracao->fetch();
-        return $usuario ?: null;
+        $registroUsuario = $declaracao->fetch();
+        return $registroUsuario ?: null;
     }
 
-    private function textoOuNulo($valor): ?string
+    private function textoOuNulo(mixed $valor): ?string
     {
         $texto = trim((string)$valor);
         return $texto !== '' ? $texto : null;
@@ -30,7 +32,7 @@ final class Usuario extends Model
     public function encontrarPorEmail(string $email): ?array
     {
         $consultaSql = "SELECT * FROM usuarios WHERE email = :email LIMIT 1";
-        return $this->buscarUsuarioUnico($consultaSql, ':email', $email);
+        return $this->buscarUsuarioUnicoPorParametro($consultaSql, ':email', $email);
     }
 
     /**
@@ -39,7 +41,7 @@ final class Usuario extends Model
     public function encontrarPorId(string $id): ?array
     {
         $consultaSql = "SELECT * FROM usuarios WHERE id = :id LIMIT 1";
-        return $this->buscarUsuarioUnico($consultaSql, ':id', $id);
+        return $this->buscarUsuarioUnicoPorParametro($consultaSql, ':id', $id);
     }
 
     /**
@@ -50,6 +52,7 @@ final class Usuario extends Model
     public function criar(array $dados): bool
     {
         $usuarioId = UuidHelper::generateStandard();
+        $dadosCadastro = $this->normalizarDadosCadastro($dados, $usuarioId);
 
         $consultaSql = "INSERT INTO usuarios (
             id, nome, email, senha_hash, telefone, tipo_usuario,
@@ -62,23 +65,31 @@ final class Usuario extends Model
 
         $declaracao = $this->prepare($consultaSql);
 
-        return $declaracao->execute([
+        return $declaracao->execute($dadosCadastro);
+    }
+
+    private function normalizarDadosCadastro(array $dados, string $usuarioId): array
+    {
+        $tipoUsuario = (string)($dados['tipo_usuario'] ?? 'Comum');
+        if (!in_array($tipoUsuario, self::TIPOS_USUARIO_PERMITIDOS, true)) {
+            $tipoUsuario = 'Comum';
+        }
+
+        return [
             ':id'           => $usuarioId,
             ':nome'         => $dados['nome'],
             ':email'        => $dados['email'],
             ':senha_hash'   => $this->gerarHashSenha((string)$dados['senha']),
             ':telefone'     => $this->textoOuNulo($dados['telefone'] ?? ''),
-            ':tipo_usuario' => $dados['tipo_usuario'] ?? 'Comum',
+            ':tipo_usuario' => $tipoUsuario,
             ':foto_perfil'  => $this->textoOuNulo($dados['foto_perfil'] ?? ''),
-
-            ':cep'    => $this->textoOuNulo($dados['cep'] ?? ''),
-            ':bairro' => $this->textoOuNulo($dados['bairro'] ?? ''),
-            ':rua'    => $this->textoOuNulo($dados['rua'] ?? ''),
-            ':numero' => $this->textoOuNulo($dados['numero'] ?? ''),
-            ':cidade' => $this->textoOuNulo($dados['cidade'] ?? ''),
-            ':estado' => $this->textoOuNulo($dados['estado'] ?? ''),
-
-        ]);
+            ':cep'          => $this->textoOuNulo($dados['cep'] ?? ''),
+            ':bairro'       => $this->textoOuNulo($dados['bairro'] ?? ''),
+            ':rua'          => $this->textoOuNulo($dados['rua'] ?? ''),
+            ':numero'       => $this->textoOuNulo($dados['numero'] ?? ''),
+            ':cidade'       => $this->textoOuNulo($dados['cidade'] ?? ''),
+            ':estado'       => $this->textoOuNulo($dados['estado'] ?? ''),
+        ];
     }
 
     /**
@@ -137,9 +148,7 @@ final class Usuario extends Model
      */
     public function redefinirSenhaSemSenhaAtual(string $usuarioId, string $novaSenha): bool
     {
-        return $this->atualizarSenhaHash(
-            $usuarioId,
-            $this->gerarHashSenha($novaSenha)
-        );
+        $novoHashSenha = $this->gerarHashSenha($novaSenha);
+        return $this->atualizarSenhaHash($usuarioId, $novoHashSenha);
     }
 }

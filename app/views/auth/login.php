@@ -1,36 +1,43 @@
-
 <?php
-function h($v): string { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
+declare(strict_types=1);
+
+require_once APP_PATH . 'helpers/view_helpers.php';
 ?>
 
-<h1>Login</h1>
+<div class="auth-acesso-pagina">
+  <main class="auth-acesso-cartao auth-acesso-cartao--login">
+    <h1 class="auth-acesso-titulo">Login</h1>
+    <p class="auth-acesso-subtitulo">Entre com seu e-mail e senha para acessar sua conta.</p>
 
-<?php if (!empty($sucesso)): ?>
-  <p style="color: green; font-weight: bold;">
-    <?= htmlspecialchars($sucesso, ENT_QUOTES, 'UTF-8') ?>
-  </p>
-<?php endif; ?>
+    <?php if (!empty($sucesso)): ?>
+      <p class="auth-mensagem auth-mensagem--sucesso">
+        <?= htmlspecialchars($sucesso, ENT_QUOTES, 'UTF-8') ?>
+      </p>
+    <?php endif; ?>
 
-<?php if (!empty($erro)): ?>
-  <p style="color: red; font-weight: bold;"><?= h($erro) ?></p>
-<?php endif; ?>
+    <?php if (!empty($erro)): ?>
+      <p class="auth-mensagem auth-mensagem--erro"><?= h($erro) ?></p>
+    <?php endif; ?>
 
-<?php if (!empty($erro)): ?>
-  <p style="color:red;"><?= h($erro) ?></p>
-<?php endif; ?>
+    <form method="post" action="<?= BASE_URL ?>/index.php?c=auth&a=login" class="auth-acesso-formulario">
+      <?= csrfInput('auth_login') ?>
+      <div class="auth-acesso-campo">
+        <label for="login_email">E-mail</label>
+        <input id="login_email" type="email" name="email" required>
+      </div>
 
-<form method="post" action="">
-  <label>E-mail</label><br>
-  <input type="email" name="email" required><br><br>
+      <div class="auth-acesso-campo">
+        <label for="login_senha">Senha</label>
+        <input id="login_senha" type="password" name="senha" required>
+      </div>
 
-  <label>Senha</label><br>
-  <input type="password" name="senha" required><br><br>
+      <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
 
-  <button type="submit">Entrar</button>
-</form>
-
-<p style="margin-top:10px;">
-  <a href="<?= BASE_URL ?>/cadastro">Cadastrar</a>
-  &nbsp;|&nbsp;
-  <a href="<?= BASE_URL ?>/esqueci">Esqueci a senha</a>
-</p>
+    <p class="auth-acesso-links">
+      <a href="<?= BASE_URL ?>/index.php?c=paginas&a=home#cadastro">Cadastrar</a>
+      <span aria-hidden="true">|</span>
+      <a href="<?= BASE_URL ?>/esqueci">Esqueci a senha</a>
+    </p>
+  </main>
+</div>

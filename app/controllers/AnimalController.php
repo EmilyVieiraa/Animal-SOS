@@ -14,7 +14,6 @@ final class AnimalController extends Controller
         'Comum'      => [],
         'ONG'        => ['Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
         'Autoridade' => ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
-        'Admin'      => ['Aguardando', 'Em andamento', 'Adoção', 'Resgatado', 'Finalizado'],
     ];
 
     public function __construct()
@@ -84,7 +83,7 @@ final class AnimalController extends Controller
 
         // Prépara dados de permissão para a view
         $tipoUsuarioLogado = (string)($_SESSION['tipo_usuario'] ?? 'Comum');
-        $podeAlterarStatus = in_array($tipoUsuarioLogado, ['ONG', 'Autoridade', 'Admin'], true);
+        $podeAlterarStatus = in_array($tipoUsuarioLogado, ['ONG', 'Autoridade'], true);
         $statusDisponiveis = $this->obterStatusDisponiveisParaTipo($tipoUsuarioLogado);
 
         $this->view('animais/detalhes', [
@@ -405,7 +404,7 @@ final class AnimalController extends Controller
     }
 
     /**
-     * Exclui uma denúncia (apenas dono ou admin).
+     * Exclui uma denúncia (apenas dono ou autoridade).
      */
     public function excluir(): void
     {
@@ -423,8 +422,8 @@ final class AnimalController extends Controller
         }
 
         $usuarioId = (string)($_SESSION['usuario_id'] ?? '');
-        $tipoUsuario = (string)($_SESSION['tipo_usuario'] ?? '');
-        $ehAdministrador = in_array(mb_strtolower($tipoUsuario), ['admin', 'administrador'], true);
+        $tipoUsuario = (string)($_SESSION['tipo_usuario'] ?? 'Comum');
+        $ehAutoridade = $tipoUsuario === 'Autoridade';
 
         $denunciaDonoId = $this->animalModel->buscarDonoId($denunciaId);
 
@@ -433,7 +432,7 @@ final class AnimalController extends Controller
             return;
         }
 
-        $temPermissaoExcluir = $ehAdministrador || $denunciaDonoId === $usuarioId;
+        $temPermissaoExcluir = $ehAutoridade || $denunciaDonoId === $usuarioId;
         if (!$temPermissaoExcluir) {
             http_response_code(403);
             exit('Você não tem permissão para excluir esta denúncia.');

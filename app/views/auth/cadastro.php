@@ -1,60 +1,76 @@
-<h1>Cadastro</h1>
+<?php
+declare(strict_types=1);
 
-<?php if (!empty($erro)): ?>
-    <p style="color:red;"><?= htmlspecialchars($erro) ?></p>
-<?php endif; ?>
+require_once APP_PATH . 'helpers/view_helpers.php';
 
-    <div class="register-modal">
-    <h2>Criar conta</h2>
+$flashRegistroErro = flashConsumir('flash_registro_erro');
+$flashRegistroSucesso = flashConsumir('flash_registro_sucesso');
+?>
 
-    <?php if (!empty($_SESSION['flash_registro_erro'])): ?>
-        <div class="alert alert-error">
-        <?= htmlspecialchars($_SESSION['flash_registro_erro']) ?>
-        </div>
-        <?php unset($_SESSION['flash_registro_erro']); ?>
-    <?php endif; ?>
+<div class="auth-acesso-pagina">
+    <main class="auth-acesso-cartao auth-acesso-cartao--cadastro">
+        <h1 class="auth-acesso-titulo">Cadastro</h1>
+        <p class="auth-acesso-subtitulo">Preencha os dados abaixo para criar sua conta.</p>
 
-    <?php if (!empty($_SESSION['flash_registro_sucesso'])): ?>
-        <div class="alert alert-success">
-        <?= htmlspecialchars($_SESSION['flash_registro_sucesso']) ?>
-        </div>
-        <?php unset($_SESSION['flash_registro_sucesso']); ?>
-    <?php endif; ?>
+        <?php if (!empty($erro)): ?>
+            <p class="auth-mensagem auth-mensagem--erro"><?= h($erro) ?></p>
+        <?php endif; ?>
 
-    <form method="post" action="/animalSOS/public/index.php?c=auth&a=registro">
-        ...
-    </form>
-    </div>
+        <?php if (!empty($flashRegistroErro)): ?>
+            <div class="alert alert-error">
+                <?= h($flashRegistroErro) ?>
+            </div>
+        <?php endif; ?>
 
-<form method="post">
-    <label>Nome <span style="color:red;">*</span></label><br>
-    <input type="text" name="nome" required><br><br>
+        <?php if (!empty($flashRegistroSucesso)): ?>
+            <div class="alert alert-success">
+                <?= h($flashRegistroSucesso) ?>
+            </div>
+        <?php endif; ?>
 
-    <label>E-mail <span style="color:red;">*</span></label><br>
-    <input type="email" name="email" required><br><br>
+        <form method="post" action="<?= BASE_URL ?>/index.php?c=auth&a=registro" enctype="multipart/form-data" class="auth-acesso-formulario auth-acesso-formulario--cadastro">
+            <?= csrfInput('auth_registro') ?>
+            <div class="auth-acesso-campo">
+                <label for="cadastro_nome">Nome <span style="color:red;">*</span></label>
+                <input id="cadastro_nome" type="text" name="nome" required>
+            </div>
 
-    <label>Senha <span style="color:red;">*</span></label><br>
-    <input
-    type="password"
-    name="senha"
-    minlength="8"
-    required
-    autocomplete="new-password"
-    /><br><br>
+            <div class="auth-acesso-campo">
+                <label for="cadastro_email">E-mail <span style="color:red;">*</span></label>
+                <input id="cadastro_email" type="email" name="email" required>
+            </div>
 
-    <label>Telefone</label><br>
-    <input type="text" name="telefone"><br><br>
+            <div class="auth-acesso-campo">
+                <label for="cadastro_senha">Senha <span style="color:red;">*</span></label>
+                <input
+                id="cadastro_senha"
+                type="password"
+                name="senha"
+                minlength="8"
+                required
+                autocomplete="new-password"
+                >
+            </div>
 
-    <label>Tipo de usuário</label><br>
-    <select name="tipo_usuario">
-        <option value="Comum">Comum</option>
-        <option value="Voluntário">Voluntário</option>
-        <option value="Admin">Admin</option>
-    </select><br><br>
+            <div class="auth-acesso-campo">
+                <label for="cadastro_telefone">Telefone</label>
+                <input id="cadastro_telefone" type="text" name="telefone">
+            </div>
 
-    <button type="submit">Cadastrar</button>
-</form>
+            <div class="auth-acesso-campo">
+                <label for="cadastro_tipo_usuario">Tipo de usuário</label>
+                <select id="cadastro_tipo_usuario" name="tipo_usuario">
+                    <option value="Comum">Comum</option>
+                    <option value="ONG">ONG</option>
+                    <option value="Autoridade">Autoridade</option>
+                </select>
+            </div>
 
-<p>
-    <a href="<?= BASE_URL ?>/index.php?c=auth&a=login">Voltar para login</a>
-</p>
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+
+        <p class="auth-acesso-links">
+            <a href="<?= BASE_URL ?>/index.php?c=auth&a=login">Voltar para login</a>
+        </p>
+    </main>
+</div>

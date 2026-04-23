@@ -5,6 +5,16 @@ declare(strict_types=1);
 // Ambiente
 define('APP_ENV', 'local'); // local | prod
 
+$envConfig = static function (string $chave, ?string $padrao = null): ?string {
+    $valor = $_ENV[$chave] ?? $_SERVER[$chave] ?? getenv($chave);
+
+    if ($valor === false || $valor === null || $valor === '') {
+        return $padrao;
+    }
+
+    return (string)$valor;
+};
+
 // Erros (dev vs prod)
 if (APP_ENV === 'prod') {
     ini_set('display_errors', '0');
@@ -46,12 +56,12 @@ define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif']);
 define('ITEMS_PER_PAGE', 10);
 
 // Configurações de E-mail (SMTP)
-define('MAIL_HOST', 'smtp.gmail.com');
-define('MAIL_PORT', 587);
-define('MAIL_USER', 'emilycamilavieira7@gmail.com');
-define('MAIL_PASS', 'qxhwiyswsirtgizb');
-define('MAIL_FROM', 'emilycamilavieira7@gmail.com');
-define('MAIL_FROM_NAME', 'Animal S.O.S');
+define('MAIL_HOST', $envConfig('MAIL_HOST', 'smtp.gmail.com'));
+define('MAIL_PORT', (int)$envConfig('MAIL_PORT', '587'));
+define('MAIL_USER', $envConfig('MAIL_USER', ''));
+define('MAIL_PASS', $envConfig('MAIL_PASS', ''));
+define('MAIL_FROM', $envConfig('MAIL_FROM', MAIL_USER !== '' ? MAIL_USER : 'no-reply@localhost'));
+define('MAIL_FROM_NAME', $envConfig('MAIL_FROM_NAME', 'Animal S.O.S'));
 
 // Iniciar sessão (com proteção)
 session_name(SESSION_NAME);

@@ -45,7 +45,6 @@ $params          = [];
 $routes = [
     '/' => ['PaginasController', 'home'],
     '/login'     => ['AuthController', 'login'],
-    '/cadastro'  => ['AuthController', 'registro'],
     '/logout'    => ['AuthController', 'logout'],
     '/esqueci'            => ['AuthController', 'esqueciSenha'],
     '/redefinir-senha'    => ['AuthController', 'redefinirSenha'],
@@ -59,7 +58,7 @@ $routes = [
     '/mapa'      => ['MapaController', 'index'],
 
     '/perfil'    => ['UsuarioController', 'meuPerfil'],
-    '/senha'     => ['AuthController', 'esqueciSenha'],
+    '/senha'     => ['AuthController', 'esqueciSenha'], // Alias legado mantido por compatibilidade.
 
     '/denuncias' => ['AnimalController', 'listar'],
     '/reportar'  => ['AnimalController', 'reportar'],

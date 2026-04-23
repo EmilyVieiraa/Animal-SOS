@@ -2,9 +2,52 @@
 declare(strict_types=1);
 
 if (!function_exists('h')) {
-    function h($v): string
+    function h(mixed $valor): string
     {
-        return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars((string)$valor, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('csrfToken')) {
+    function csrfToken(string $contexto): string
+    {
+        if (!isset($_SESSION['_csrf_tokens']) || !is_array($_SESSION['_csrf_tokens'])) {
+            $_SESSION['_csrf_tokens'] = [];
+        }
+
+        if (empty($_SESSION['_csrf_tokens'][$contexto]) || !is_string($_SESSION['_csrf_tokens'][$contexto])) {
+            $_SESSION['_csrf_tokens'][$contexto] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['_csrf_tokens'][$contexto];
+    }
+}
+
+if (!function_exists('csrfInput')) {
+    function csrfInput(string $contexto): string
+    {
+        return '<input type="hidden" name="_csrf_token" value="' . h(csrfToken($contexto)) . '">';
+    }
+}
+
+if (!function_exists('flashConsultar')) {
+    function flashConsultar(string $chave): ?string
+    {
+        if (!isset($_SESSION[$chave])) {
+            return null;
+        }
+
+        $valor = (string)$_SESSION[$chave];
+        return $valor !== '' ? $valor : null;
+    }
+}
+
+if (!function_exists('flashConsumir')) {
+    function flashConsumir(string $chave): ?string
+    {
+        $valor = flashConsultar($chave);
+        unset($_SESSION[$chave]);
+        return $valor;
     }
 }
 
@@ -56,36 +99,43 @@ if (!function_exists('formatDateTime')) {
     }
 }
 
-// Normaliza caminho da imagem para URL pública
-function publicImgUrl(string $path): string {
-    $path = trim($path);
-    if ($path === '') return '';
+if (!function_exists('publicImgUrl')) {
+    // Normaliza caminho da imagem para URL pública
+    function publicImgUrl(string $path): string {
+        $path = trim($path);
+        if ($path === '') return '';
 
-    // Se já for URL absoluta, retorna como está
-    if (preg_match('~^https?://~i', $path)) return $path;
+        // Se já for URL absoluta, retorna como está
+        if (preg_match('~^https?://~i', $path)) return $path;
 
-    // Remove barras duplicadas
-    $path = ltrim($path, '/');
+        // Remove barras duplicadas
+        $path = ltrim($path, '/');
 
-    // Garante BASE_URL + / + path
-    return BASE_URL . '/' . $path;
-}
-// Gera iniciais para avatar
-function initials(string $name): string {
-    $name = trim($name);
-    if ($name === '') return 'US';
-    $parts = preg_split('/\s+/', $name);
-    $a = strtoupper(mb_substr($parts[0] ?? 'U', 0, 1));
-    $b = strtoupper(mb_substr($parts[1] ?? ($parts[0] ?? 'S'), 0, 1));
-    return $a . $b;
+        // Garante BASE_URL + / + path
+        return BASE_URL . '/' . $path;
+    }
 }
 
-function pageUrl(int $p, string $status): string {
-    $q = [
-        'c' => 'animal',
-        'a' => 'listar',
-        'p' => $p,
-    ];
-    if ($status !== '') $q['status'] = $status;
-    return BASE_URL . '/index.php?' . http_build_query($q);
+if (!function_exists('initials')) {
+    // Gera iniciais para avatar
+    function initials(string $name): string {
+        $name = trim($name);
+        if ($name === '') return 'US';
+        $parts = preg_split('/\s+/', $name);
+        $a = strtoupper(mb_substr($parts[0] ?? 'U', 0, 1));
+        $b = strtoupper(mb_substr($parts[1] ?? ($parts[0] ?? 'S'), 0, 1));
+        return $a . $b;
+    }
+}
+
+if (!function_exists('pageUrl')) {
+    function pageUrl(int $p, string $status): string {
+        $q = [
+            'c' => 'animal',
+            'a' => 'listar',
+            'p' => $p,
+        ];
+        if ($status !== '') $q['status'] = $status;
+        return BASE_URL . '/index.php?' . http_build_query($q);
+    }
 }
