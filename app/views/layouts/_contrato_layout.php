@@ -15,7 +15,6 @@ if (!function_exists('normalizarContratoLayoutGlobal')) {
         $navegacao = is_array($dados['navegacao'] ?? null) ? $dados['navegacao'] : [];
         $modal = is_array($dados['modal'] ?? null) ? $dados['modal'] : [];
         $sessao = is_array($dados['sessao'] ?? null) ? $dados['sessao'] : [];
-        $flash = is_array($dados['flash'] ?? null) ? $dados['flash'] : [];
 
         $urlHome = (string)($navegacao['urlHome'] ?? (BASE_URL . '/index.php?c=paginas&a=home'));
 
@@ -37,12 +36,6 @@ if (!function_exists('normalizarContratoLayoutGlobal')) {
             ],
             'sessao' => [
                 'usuarioLogado' => (bool)($sessao['usuarioLogado'] ?? !empty($_SESSION['usuario_id'])),
-            ],
-            'flash' => [
-                'mensagemSucessoHome' => is_string($flash['mensagemSucessoHome'] ?? null) ? (string)$flash['mensagemSucessoHome'] : '',
-                'mensagemErroLogin' => is_string($flash['mensagemErroLogin'] ?? null) ? (string)$flash['mensagemErroLogin'] : '',
-                'mensagemErroCadastro' => is_string($flash['mensagemErroCadastro'] ?? null) ? (string)$flash['mensagemErroCadastro'] : '',
-                'mensagemSucessoCadastro' => is_string($flash['mensagemSucessoCadastro'] ?? null) ? (string)$flash['mensagemSucessoCadastro'] : '',
             ],
         ];
     }

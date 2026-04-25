@@ -95,12 +95,6 @@ abstract class Controller
             'sessao' => [
                 'usuarioLogado' => !empty($_SESSION['usuario_id']),
             ],
-            'flash' => [
-                'mensagemSucessoHome' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemSucessoHome'] ?? ''),
-                'mensagemErroLogin' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemErroLogin'] ?? ''),
-                'mensagemErroCadastro' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemErroCadastro'] ?? ''),
-                'mensagemSucessoCadastro' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemSucessoCadastro'] ?? ''),
-            ],
         ];
     }
 

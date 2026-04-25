@@ -336,5 +336,59 @@ final class Animal extends Model
             $linha['titulo'] = $linha['especie'] ?? 'Animal sem título';
         }
     }
+
+    /**
+     * Conta a quantidade de animais reportados por um autor específico.
+     */
+    public function contarPorAutor(string $usuarioId): int
+    {
+        $consultaSql = "SELECT COUNT(*) FROM animais_reportados WHERE criado_por = :usuario_id";
+        $declaracao = $this->prepare($consultaSql);
+        $declaracao->execute([':usuario_id' => $usuarioId]);
+        
+        $resultado = $declaracao->fetchColumn();
+        return (int)($resultado ?: 0);
+    }
+
+    /**
+     * Lista todos os animais reportados por um autor específico.
+     * Retorna com campos normalizados.
+     */
+    public function listarPorAutor(string $usuarioId): array
+    {
+        $consultaSql = "
+            SELECT
+                a.id,
+                a.criado_por AS usuario_id,
+                a.titulo,
+                a.foto,
+                a.descricao,
+                a.especie,
+                a.cor,
+                a.condicao,
+                a.localizacao,
+                a.status,
+                a.data_hora AS data_criacao,
+                u.nome AS usuario_nome,
+                u.email AS usuario_email,
+                u.telefone AS usuario_telefone
+            FROM animais_reportados a
+            LEFT JOIN usuarios u ON u.id = a.criado_por
+            WHERE a.criado_por = :usuario_id
+            ORDER BY a.data_hora DESC
+        ";
+
+        $declaracao = $this->prepare($consultaSql);
+        $declaracao->execute([':usuario_id' => $usuarioId]);
+
+        $resultados = $declaracao->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        // Garante que cada animal tenha um título válido
+        foreach ($resultados as &$linha) {
+            $this->garantirTitulo($linha);
+        }
+
+        return $resultados;
+    }
 }
 

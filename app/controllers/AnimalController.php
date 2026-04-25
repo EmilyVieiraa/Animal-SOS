@@ -13,7 +13,6 @@ final class AnimalController extends Controller
      * Contextos de validação CSRF para este controller.
      */
     private const CSRF_CONTEXTO_REPORTAR = 'animal_reportar';
-    private const CSRF_CONTEXTO_ATUALIZAR_STATUS = 'animal_atualizar_status';
     private const CSRF_CONTEXTO_EXCLUIR = 'animal_excluir';
 
     /**
@@ -112,6 +111,9 @@ final class AnimalController extends Controller
             'podeAlterarStatus'   => $podeAlterarStatus,
             'statusDisponiveis'   => $statusDisponiveis,
             'imagemPlaceholder'   => BASE_URL . '/assets/img/placeholder-animal.jpg',
+            'mensagemSucesso'     => flashConsumirTexto('flash_success'),
+            'mensagemErro'        => flashConsumirTexto('flash_error'),
+            'mensagemInfo'        => flashConsumirTexto('flash_info'),
         ]);
     }
 
@@ -137,6 +139,7 @@ final class AnimalController extends Controller
         }
 
         $this->view('animais/reportar', [
+            'erro' => flashConsumirTexto('flash_error'),
             '_csrf_token' => csrfToken(self::CSRF_CONTEXTO_REPORTAR),
         ]);
     }
@@ -148,8 +151,8 @@ final class AnimalController extends Controller
     {
         // Validação CSRF
         if (!$this->validarCsrf(self::CSRF_CONTEXTO_REPORTAR)) {
-            flashDefinir('flash_error', 'Token de segurança inválido ou expirado. Tente novamente.');
             $this->view('animais/reportar', [
+                'erro' => 'Token de segurança inválido ou expirado. Tente novamente.',
                 'old' => $_POST,
                 '_csrf_token' => csrfToken(self::CSRF_CONTEXTO_REPORTAR),
             ]);
@@ -171,8 +174,8 @@ final class AnimalController extends Controller
         try {
             $caminhosFotos = $this->salvarFotosAnimal('fotos', 5, 2 * 1024 * 1024);
         } catch (\Throwable $excecao) {
-            flashDefinir('flash_error', $excecao->getMessage());
             $this->view('animais/reportar', [
+                'erro' => $excecao->getMessage(),
                 'old'  => $_POST,
                 '_csrf_token' => csrfToken(self::CSRF_CONTEXTO_REPORTAR),
             ]);
@@ -204,8 +207,8 @@ final class AnimalController extends Controller
         $animalId = $this->animalModel->criar($dadosParaSalvar);
 
         if (!$animalId) {
-            flashDefinir('flash_error', 'Não foi possível salvar a denúncia. Tente novamente.');
             $this->view('animais/reportar', [
+                'erro' => 'Não foi possível salvar a denúncia. Tente novamente.',
                 'old'  => $_POST,
                 '_csrf_token' => csrfToken(self::CSRF_CONTEXTO_REPORTAR),
             ]);
@@ -502,7 +505,7 @@ final class AnimalController extends Controller
         $this->requireAuth();
 
         // Validação CSRF
-        if (!$this->validarCsrf(self::CSRF_CONTEXTO_ATUALIZAR_STATUS)) {
+        if (!$this->validarCsrf(CSRF_CONTEXTO_ANIMAL_ATUALIZAR_STATUS)) {
             flashDefinir('flash_error', 'Token de segurança inválido ou expirado. Tente novamente.');
             $animalId = trim((string)($_POST['animal_id'] ?? ''));
             $this->redirect('/index.php?c=animal&a=detalhes&id=' . urlencode($animalId));

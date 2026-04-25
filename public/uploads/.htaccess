@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Bloqueia acesso web a artefatos operacionais e temporarios.
+<FilesMatch "(?i)^(debug_.*|.*\.(log|txt|json|md|ini|ya?ml|env|sql|bak|tmp|old|swp))$">
+    Require all denied
+</FilesMatch>

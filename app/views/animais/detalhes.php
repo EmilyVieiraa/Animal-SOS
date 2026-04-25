@@ -18,10 +18,9 @@ $autorId = (string)($animal['usuario_id'] ?? '');
 
 // Sessão e mensagens
 $usuarioLogado    = !empty($_SESSION['usuario_id']);
-$mensagemSucesso  = (string)($_SESSION['flash_success'] ?? '');
-$mensagemErro     = (string)($_SESSION['flash_error']   ?? '');
-$mensagemInfo     = (string)($_SESSION['flash_info']    ?? '');
-unset($_SESSION['flash_success'], $_SESSION['flash_error'], $_SESSION['flash_info']);
+$mensagemSucesso  = (string)($mensagemSucesso ?? '');
+$mensagemErro     = (string)($mensagemErro ?? '');
+$mensagemInfo     = (string)($mensagemInfo ?? '');
 
 // Dados preparados no controller
 $podeAtualizarStatus = (bool)($podeAlterarStatus ?? false);
@@ -195,7 +194,7 @@ $mostrarFormularioStatus = $usuarioLogado
             >
               <input type="hidden" name="animal_id" value="<?= h($animalId) ?>">
 
-                <?= csrfInput('animal_atualizar_status') ?>
+                <?= csrfInput(CSRF_CONTEXTO_ANIMAL_ATUALIZAR_STATUS) ?>
 
               <label class="denuncia-detalhe__form-status-rotulo" for="status-select">Alterar status</label>
 

@@ -48,10 +48,6 @@ main{
   flex: 1; /* empurra o footer para o final quando a página é curta */
 }
 
-.main-content{
-  width: 100%;
-}
-
 /* =========================
    Responsivo
 ========================= */
@@ -122,18 +118,6 @@ main{
   text-decoration: underline;
 }
 
-.nav-link-like{
-  color: var(--text);
-  font-weight: 600;
-  opacity: .92;
-  cursor: pointer;
-}
-
-.nav-link-like:hover{
-  opacity: 1;
-  text-decoration: underline;
-}
-
 .header-actions{
   display: flex;
   align-items: center;
@@ -145,12 +129,6 @@ main{
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.hello-user{
-  margin-right: 6px;
-  font-weight: 600;
-  color: rgba(0,0,0,.7);
 }
 
 .menu-btn{
@@ -189,11 +167,6 @@ main{
     display: inline-flex;
   }
 
-  /* reduz ruído visual */
-  .hello-user{
-    display: none;
-  }
-
   /* dropdown do menu */
   #menuToggle:checked ~ .navbar{
     display: flex;
@@ -217,8 +190,7 @@ main{
   }
 
   /* Itens do dropdown na cor do site */
-  #menuToggle:checked ~ .navbar a,
-  #menuToggle:checked ~ .navbar .nav-link-like{
+  #menuToggle:checked ~ .navbar a{
     color: var(--animal-primary);
     opacity: 1;
     font-weight: 600;
@@ -229,8 +201,7 @@ main{
   }
 
   /* HOVER com leve fundo na cor do site */
-  #menuToggle:checked ~ .navbar a:hover,
-  #menuToggle:checked ~ .navbar .nav-link-like:hover{
+  #menuToggle:checked ~ .navbar a:hover{
     background: rgba(122,79,50,.10);
   }
 
@@ -286,21 +257,6 @@ main{
 
 .profile-chip:hover{
   background: rgba(122,79,50,.12);
-}
-
-.profile-avatar{
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-
-  display: grid;
-  place-items: center;
-
-  background: rgba(122,79,50,.18);
-  color: var(--animal-primary);
-  font-weight: 800;
-  font-size: 12px;
-  letter-spacing: .5px;
 }
 
 .profile-text{
@@ -471,22 +427,6 @@ footer{
 .footer-col a:hover{
   text-decoration: underline;
   opacity: 1;
-}
-
-.social-links{
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.social-links span{
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.18);
-  display: grid;
-  place-items: center;
-  font-weight: 800;
 }
 
 .footer-grid{
@@ -1077,19 +1017,6 @@ body:has(#cadastroToggle:checked){
   line-height: 1.6;
 }
 
-.auth-acesso-mensagem{
-  margin: 0 0 14px;
-  font-weight: 700;
-}
-
-.auth-acesso-mensagem--erro{
-  color: #c62828;
-}
-
-.auth-acesso-mensagem--sucesso{
-  color: #2e7d32;
-}
-
 .auth-acesso-formulario{
   display: grid;
   gap: 14px;
@@ -1397,8 +1324,7 @@ body:has(#cadastroToggle:checked){
   padding: 28px 0 10px;
 }
 
-.denuncia-paginacao__link--desabilitada,
-.denuncia-paginacao__pagina--desabilitada{
+.denuncia-paginacao__link--desabilitada{
   pointer-events: none;
   opacity: .45;
 }
@@ -1420,27 +1346,27 @@ body:has(#cadastroToggle:checked){
    TELA REPORTAR
    ========================= */
 .report-page{
-  padding: 34px 0 48px !important;
-  background: linear-gradient(to bottom, #ffffff 0%, #f7f4f0 100%) !important;
+  padding: 34px 0 48px;
+  background: linear-gradient(to bottom, #ffffff 0%, #f7f4f0 100%);
 }
 
 .report-page .report-container{
-  width: min(900px, calc(100% - 40px)) !important;
-  margin: 0 auto !important;
-  background: #fff !important;
-  border-radius: 16px !important;
-  padding: 26px 26px 22px !important;
-  border: 1px solid rgba(0,0,0,.06) !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,.06) !important;
+  width: min(900px, calc(100% - 40px));
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 26px 26px 22px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 10px 28px rgba(0,0,0,.06);
   color: var(--animal-primary);
 }
 
 .report-page h1{
-  margin: 0 0 18px !important;
-  font-family: var(--font-title) !important;
-  font-weight: 400 !important;
-  font-size: clamp(28px, 3vw, 40px) !important;
-  line-height: 1.1 !important;
+  margin: 0 0 18px;
+  font-family: var(--font-title);
+  font-weight: 400;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.1;
   color: var(--animal-primary);
   text-align: center;
 }
@@ -1452,8 +1378,8 @@ body:has(#cadastroToggle:checked){
 }
 
 .report-page .report-form{
-  display: grid !important;
-  gap: 14px !important;
+  display: grid;
+  gap: 14px;
 }
 
 .report-error{
@@ -1468,13 +1394,13 @@ body:has(#cadastroToggle:checked){
 }
 
 .report-page .form-group{
-  display: grid !important;
-  gap: 8px !important;
+  display: grid;
+  gap: 8px;
 }
 
 .report-page label{
-  font-weight: 700 !important;
-  font-size: 15px !important;
+  font-weight: 700;
+  font-size: 15px;
   color: var(--animal-primary);
 }
 
@@ -1482,46 +1408,42 @@ body:has(#cadastroToggle:checked){
 .report-page input[type="file"],
 .report-page select,
 .report-page textarea{
-  width: 100% !important;
-  border-radius: 12px !important;
-  border: 1px solid var(--border) !important;
-  padding: 10px 12px !important;
-  outline: none !important;
-  font-size: 14px !important;
-  font-family: var(--font-body) !important;
-  background: #fff !important;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: #fff;
   color: var(--animal-primary);
 }
 
-.report-page select{ height: 42px !important; }
+.report-page select{ height: 42px; }
 
 .report-page textarea{
-  min-height: 120px !important;
-  resize: vertical !important;
+  min-height: 120px;
+  resize: vertical;
 }
 
 .report-page input:focus,
 .report-page select:focus,
 .report-page textarea:focus{
-  border-color: rgba(122,79,50,.65) !important;
-  box-shadow: 0 0 0 4px rgba(122,79,50,.12) !important;
+  border-color: rgba(122,79,50,.65);
+  box-shadow: 0 0 0 4px rgba(122,79,50,.12);
 }
 
 .report-page .radio-line{
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  font-weight: 500 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
   color: var(--animal-primary);
-  margin-right: 12px !important;
+  margin-right: 12px;
 }
 
 .report-page input[type="radio"]{
-  accent-color: var(--animal-primary) !important;
-}
-
-.report-upload input[type="file"]{
-  width: 100%;
+  accent-color: var(--animal-primary);
 }
 
 /* Container do preview (grid controlado) */
@@ -1889,20 +1811,6 @@ body:has(#cadastroToggle:checked){
   font-weight: 700;
 }
 
-.btn-ui-danger{
-  border: 1px solid rgba(180, 35, 35, .35);
-  background: #FFE3E3;
-  color: #B42323;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-ui-danger:hover{
-  filter: brightness(.98);
-}
-
 /* 6. SEÇÃO INFERIOR: HISTÓRICO E COMENTÁRIOS */
 
 .denuncia-detalhe__atividade{
@@ -2238,26 +2146,6 @@ body:has(#cadastroToggle:checked){
   font-weight: 700;
   border: 1px solid rgba(0,0,0,.10);
   box-shadow: 0 10px 20px rgba(0,0,0,.12);
-}
-
-/* Pills informativas */
-.pill{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.14);
-  font-size: 12.5px;
-  color: rgba(0,0,0,.72);
-  background: #fff;
-}
-
-.pill-soft{
-  border-color: rgba(122,79,50,.28);
-  background: rgba(122,79,50,.08);
-  color: var(--animal-primary);
-  font-weight: 700;
 }
 
 /* Texto discreto */

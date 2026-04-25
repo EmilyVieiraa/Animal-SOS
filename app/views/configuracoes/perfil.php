@@ -42,7 +42,7 @@ $normalizarDadosDenuncia = static function (array $denuncia, string $nomeAutor):
     'especie' => (string)($denuncia['especie'] ?? 'Animal'),
     'condicao' => (string)($denuncia['condicao'] ?? ''),
     'descricao' => (string)($denuncia['descricao'] ?? ''),
-    'data_hora' => (string)($denuncia['data_hora'] ?? ''),
+    'data_criacao' => (string)($denuncia['data_criacao'] ?? ''),
     'status' => (string)($denuncia['status'] ?? ''),
     'usuario_nome' => $nomeAutor,
   ];
@@ -103,7 +103,7 @@ $renderizarSecaoDenuncias = static function (
       <div class="perfil-denuncias-grid">
         <?php foreach ($listaDenuncias as $denuncia): ?>
           <?php
-            $dadosDenuncia = $normalizarDadosDenuncia($denuncia, $nomeUsuario);
+            $dadosAnimal = $normalizarDadosDenuncia($denuncia, $nomeUsuario);
             require APP_PATH . 'views/partials/_animal_card.php';
           ?>
         <?php endforeach; ?>
@@ -234,6 +234,7 @@ $renderizarSecaoDenuncias = static function (
     <?php endif; ?>
 
     <form method="post" class="perfil-form">
+      <?= csrfInput('usuario_perfil') ?>
       <article class="perfil-card-main">
 
         <?php $renderizarAvatarPerfil($fotoPerfil, $nomeUsuario, $inicialNomeUsuario); ?>

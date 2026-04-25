@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require_once APP_PATH . 'helpers/view_helpers.php';
 
-$old       = $old ?? [];
-$flashErro = flashConsumir('flash_error') ?? '';
+$old = $old ?? [];
+$erro = (string)($erro ?? '');
 ?>
 
 <section class="report-page">
@@ -12,10 +12,8 @@ $flashErro = flashConsumir('flash_error') ?? '';
 
     <h1>Reportar animal em risco</h1>
 
-    <?php if (!empty($erro)): ?>
-      <p class="report-error"><?= htmlspecialchars((string)$erro, ENT_QUOTES, 'UTF-8') ?></p>
-    <?php elseif ($flashErro !== ''): ?>
-      <p class="report-error"><?= htmlspecialchars($flashErro, ENT_QUOTES, 'UTF-8') ?></p>
+    <?php if ($erro !== ''): ?>
+      <p class="report-error"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></p>
     <?php endif; ?>
 
     <form

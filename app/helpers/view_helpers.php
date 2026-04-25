@@ -5,6 +5,10 @@ if (!defined('CSRF_CONTEXTO_COMENTARIO_ADICIONAR')) {
     define('CSRF_CONTEXTO_COMENTARIO_ADICIONAR', 'comentario_adicionar');
 }
 
+    if (!defined('CSRF_CONTEXTO_ANIMAL_ATUALIZAR_STATUS')) {
+        define('CSRF_CONTEXTO_ANIMAL_ATUALIZAR_STATUS', 'animal_atualizar_status');
+    }
+
 // ============================================================
 // Escape HTML
 // ============================================================
