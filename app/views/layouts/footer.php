@@ -1,3 +1,8 @@
+<?php
+$urlHome = BASE_URL . '/index.php?c=paginas&a=home';
+$urlAnimaisReportados = BASE_URL . '/index.php?c=animal&a=listar';
+$urlReportarAnimal = BASE_URL . '/index.php?c=animal&a=reportar';
+?>
 </main>
 
 <footer>
@@ -10,9 +15,9 @@
     <div class="footer-col">
       <h4>Navegação</h4>
       <ul>
-        <li><a href="<?= BASE_URL ?>/index.php?c=paginas&a=home">Início</a></li>
-        <li><a href="<?= BASE_URL ?>/index.php?c=animal&a=listar">Animais Reportados</a></li>
-        <li><a href="<?= BASE_URL ?>/index.php?c=animal&a=reportar">Reportar Animal</a></li>
+        <li><a href="<?= $urlHome ?>">Início</a></li>
+        <li><a href="<?= $urlAnimaisReportados ?>">Animais Reportados</a></li>
+        <li><a href="<?= $urlReportarAnimal ?>">Reportar Animal</a></li>
       </ul>
     </div>
 

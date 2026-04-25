@@ -1,12 +1,24 @@
 <?php
-$logado = !empty($_SESSION['usuario_id']);
+$usuarioLogado = !empty($_SESSION['usuario_id']);
+
+$tituloDocumento = (string)($tituloPagina ?? $title ?? 'Animal SOS');
+
+$urlHome = BASE_URL . '/index.php?c=paginas&a=home';
+$urlAnimaisReportados = BASE_URL . '/index.php?c=animal&a=listar';
+$urlReportarAnimal = BASE_URL . '/index.php?c=animal&a=reportar';
+$urlMeuPerfil = BASE_URL . '/index.php?c=usuario&a=meuPerfil';
+$urlLogout = BASE_URL . '/index.php?c=auth&a=logout';
+
+// Legado compatível: a abertura dos modais de autenticação ainda depende da home.
+$urlLoginHome = $urlHome . '#login';
+$urlCadastroHome = $urlHome . '#cadastro';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= htmlspecialchars($title ?? 'Animal SOS', ENT_QUOTES, 'UTF-8') ?></title>
+  <title><?= htmlspecialchars($tituloDocumento, ENT_QUOTES, 'UTF-8') ?></title>
 
   <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css?v=4">
 
@@ -30,26 +42,26 @@ $logado = !empty($_SESSION['usuario_id']);
 
     <!-- Mantém as ROTAS exatamente como você já usava -->
     <nav class="navbar" aria-label="Navegação principal">
-      <a href="<?= BASE_URL ?>/index.php?c=paginas&a=home">Início</a>
-      <a href="<?= BASE_URL ?>/index.php?c=animal&a=listar">Animais Reportados</a>
-      <a href="<?= BASE_URL ?>/index.php?c=animal&a=reportar">Reportar Animal</a>
+      <a href="<?= $urlHome ?>">Início</a>
+      <a href="<?= $urlAnimaisReportados ?>">Animais Reportados</a>
+      <a href="<?= $urlReportarAnimal ?>">Reportar Animal</a>
     </nav>
 
     <div class="header-actions">
       <div class="auth-buttons">
-        <?php if ($logado): ?>
+        <?php if ($usuarioLogado): ?>
 
-          <a class="profile-chip" href="<?= BASE_URL ?>/index.php?c=usuario&a=meuPerfil">
+          <a class="profile-chip" href="<?= $urlMeuPerfil ?>">
             <span class="profile-text">Meu Perfil</span>
           </a>
 
           <a class="profile-chip profile-chip--primary"
-            href="<?= BASE_URL ?>/index.php?c=auth&a=logout">
+            href="<?= $urlLogout ?>">
             <span class="profile-text">Sair</span>
           </a>
         <?php else: ?>
-          <a class="btn btn-login" href="<?= BASE_URL ?>/index.php?c=paginas&a=home#login">Login</a>
-          <a class="btn btn-primary" href="<?= BASE_URL ?>/index.php?c=paginas&a=home#cadastro">Cadastrar</a>
+          <a class="btn btn-login" href="<?= $urlLoginHome ?>">Login</a>
+          <a class="btn btn-primary" href="<?= $urlCadastroHome ?>">Cadastrar</a>
         <?php endif; ?>
 
       </div>
@@ -64,5 +76,9 @@ $logado = !empty($_SESSION['usuario_id']);
     
   </div>
 </header>
+
+<?php if (!empty($usaModalAutenticacao)): ?>
+<?php require APP_PATH . 'views/partials/_modais_autenticacao.php'; ?>
+<?php endif; ?>
 
 <main>

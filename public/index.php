@@ -51,7 +51,6 @@ $routes = [
     '/salvar-nova-senha'  => ['AuthController', 'salvarNovaSenha'],
 
     '/home'      => ['PaginasController', 'home'],
-    '/sobre'     => ['PaginasController', 'sobre'],
 
     '/dashboard' => ['EstatisticasController', 'index'],
 

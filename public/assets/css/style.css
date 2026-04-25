@@ -18,7 +18,10 @@
 }
 
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
 
 body{
   margin: 0;
@@ -26,8 +29,8 @@ body{
   color: var(--text);
   background: #ffffff;
 
-  display: flex;              /* <-- ADICIONE */
-  flex-direction: column;     /* <-- ADICIONE */
+  display: flex;
+  flex-direction: column;
 }
 
 a{ color: inherit; text-decoration: none; }
@@ -53,10 +56,6 @@ main{
    Responsivo
 ========================= */
 @media (max-width: 980px){
-  .hero-layout{
-    grid-template-columns: 1fr;
-  }
-  .hero-img{ height: 360px; }
   .navbar{ display:none; }
 }
 
@@ -104,7 +103,7 @@ main{
   color: var(--animal-primary);
 }
 
-/*NAVBAR (desktop)*/
+/* Navbar (desktop) */
 .navbar{
   display: flex;
   align-items: center;
@@ -217,16 +216,16 @@ main{
     z-index: 3000;
   }
 
-  /* ITENS DO DROPDOWN na cor do site */
+  /* Itens do dropdown na cor do site */
   #menuToggle:checked ~ .navbar a,
   #menuToggle:checked ~ .navbar .nav-link-like{
-    color: var(--animal-primary); /* <-- AQUI muda para a cor do site */
+    color: var(--animal-primary);
     opacity: 1;
     font-weight: 600;
 
-    padding: 8px 10px;           /* opcional: melhora clique */
-    border-radius: 10px;         /* opcional: melhora hover */
-    display: block;              /* garante área clicável */
+    padding: 8px 10px;
+    border-radius: 10px;
+    display: block;
   }
 
   /* HOVER com leve fundo na cor do site */
@@ -273,9 +272,9 @@ main{
   align-items: center;
   gap: 10px;
 
-  height: 40px;            /* NOVO: mesma altura visual */
-  padding: 0 12px;         /* ALTERADO: padding vertical controlado pela height */
-  border-radius: 14px;     /* ALTERADO: mais quadrado (teste 12–14) */
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 14px;
 
   background: rgba(122,79,50,.06);
   border: 1px solid rgba(122,79,50,.45);
@@ -309,9 +308,9 @@ main{
 }
 
 .profile-chip--primary{
-  background: var(--animal-primary);   /* FUNDO sólido */
+  background: var(--animal-primary);
   border: 1px solid var(--animal-primary);
-  color: #fff;                         /* TEXTO branco */
+  color: #fff;
 }
 
 .profile-chip--primary:hover{
@@ -368,36 +367,41 @@ main{
 .btn-secondary:hover{ border-color: rgba(0,0,0,.28); }
 
 /* =========================
-   Hero
+  Módulo de Páginas Institucionais - Home
 ========================= */
-.hero{
+.hero,
+.secao-home{
   position: relative;
   overflow: hidden;
   padding: 56px 0;
   background: linear-gradient(to bottom, #ffffff 0%, #f7f4f0 100%);
 }
 
-.hero-layout{
+.hero-layout,
+.layout-home{
   display: grid;
   grid-template-columns: 1.1fr .9fr;
   gap: 36px;
   align-items: center;
 }
 
-.hero-image-container{
+.hero-image-container,
+.imagem-home{
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 14px 40px rgba(0,0,0,.12);
 }
 
-.hero-img{
+.hero-img,
+.imagem-home__arquivo{
   width: 100%;
   height: 420px;
   object-fit: cover;
   display: block;
 }
 
-.hero-text h1{
+.hero-text h1,
+.texto-home h1{
   font-family: var(--font-title);
   font-weight: 400;
   line-height: 1.05;
@@ -406,16 +410,30 @@ main{
   color: #2b211a;
 }
 
-.hero-text h1 span{
+.hero-text h1 span,
+.texto-home h1 span{
   color: var(--animal-primary);
 }
 
-.hero-text p{
+.hero-text p,
+.texto-home p{
   margin: 0;
   color: var(--muted);
   font-size: 16px;
   line-height: 1.7;
   max-width: 520px;
+}
+
+@media (max-width: 980px){
+  .hero-layout,
+  .layout-home{
+    grid-template-columns: 1fr;
+  }
+
+  .hero-img,
+  .imagem-home__arquivo{
+    height: 360px;
+  }
 }
 
 /* =========================
@@ -501,8 +519,10 @@ footer{
 .footer-bottom .copyright p{ margin: 0; }
 
 /* =========================
-  Auth - Login Modal (fluxo principal)
+  Acoplamento Temporário: Autenticação na Home Institucional
 ========================= */
+
+/* Auth - Login Modal */
 .auth-login-sobreposicao{
   position: fixed;
   inset: 0;
@@ -643,7 +663,7 @@ body:has(#loginToggle:checked){
   text-decoration: underline;
 }
 
-/* Alertas compartilhados do módulo */
+/* Alertas compartilhados (home + autenticação acoplada) */
 .alert{
   padding: 10px 12px;
   border-radius: 10px;
@@ -663,9 +683,7 @@ body:has(#loginToggle:checked){
   color: #1b5e20; /* TEXTO VERDE */
 }
 
-/* =========================
-  Auth - Cadastro Modal (fluxo principal)
-========================= */
+/* Auth - Cadastro Modal */
 .auth-cadastro-sobreposicao{
   position: fixed;
   inset: 0;
@@ -2081,10 +2099,6 @@ body:has(#cadastroToggle:checked){
   height: 200px;
   background: var(--animal-primary);
   width: 100%;
-}
-
-html, body{
-  overflow-x: hidden;
 }
 
 /* Conteúdo do hero */

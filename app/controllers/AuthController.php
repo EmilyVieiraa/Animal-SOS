@@ -88,7 +88,7 @@ final class AuthController extends Controller
 
     /**
      * Grava flash de erro e redireciona para home com o modal de login aberto.
-     * Contrato com home.php: chave 'flash_error' + 'open_modal' = 'login'.
+        * Contrato com PaginasController: chave 'flash_error' + 'open_modal' = 'login'.
      */
     private function falharLogin(string $mensagem): void
     {
@@ -186,7 +186,8 @@ final class AuthController extends Controller
         // Closure de erro: grava flash e redireciona para home com modal de cadastro aberto.
         $erroCadastro = function (string $mensagem): void {
             $_SESSION['flash_registro_erro'] = $mensagem;
-            $this->redirect('/index.php?c=paginas&a=home&open=cadastro');
+            $_SESSION['open_modal'] = 'cadastro';
+            $this->redirect('/index.php?c=paginas&a=home');
         };
 
         if (!$this->validarCsrf(self::CSRF_CONTEXTO_REGISTRO)) {
@@ -208,7 +209,8 @@ final class AuthController extends Controller
 
         if ($cadastroCriado) {
             $_SESSION['flash_registro_sucesso'] = 'Cadastro realizado com sucesso. Faça login.';
-            $this->redirect('/index.php?c=paginas&a=home&open=login');
+            $_SESSION['open_modal'] = 'login';
+            $this->redirect('/index.php?c=paginas&a=home');
             return;
         }
 
