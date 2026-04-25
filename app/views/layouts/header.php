@@ -1,25 +1,23 @@
 <?php
-// Contrato de sessão: $_SESSION['usuario_id'] é definido por AuthController no login.
-$usuarioLogado = !empty($_SESSION['usuario_id']);
+require_once APP_PATH . 'views/layouts/_contrato_layout.php';
 
-// Contrato de título: Controller::normalizarDadosRenderizacao() garante que
-// $tituloPagina está sempre definido antes de chegar aqui.
-$tituloDocumento = (string)($tituloPagina ?? 'Animal SOS');
+// Contrato global normalizado para header/footer.
+$layoutGlobal = normalizarContratoLayoutGlobal($contratoLayoutGlobal ?? []);
 
-// URLs de navegação globais (contrato atual: query string).
-$urlHome              = BASE_URL . '/index.php?c=paginas&a=home';
-$urlAnimaisReportados = BASE_URL . '/index.php?c=animal&a=listar';
-$urlReportarAnimal    = BASE_URL . '/index.php?c=animal&a=reportar';
-$urlMeuPerfil         = BASE_URL . '/index.php?c=usuario&a=meuPerfil';
-$urlLogout            = BASE_URL . '/index.php?c=auth&a=logout';
+// Contrato de título: manter compatibilidade com $tituloPagina legado.
+$tituloDocumento = (string)($layoutGlobal['tituloDocumento'] ?? ($tituloPagina ?? 'Animal SOS'));
 
-// Legado compatível: modais de login/cadastro ficam na home e são abertos por âncora.
-$urlLoginHome   = $urlHome . '#login';
-$urlCadastroHome = $urlHome . '#cadastro';
+$navegacaoGlobal = $layoutGlobal['navegacao'];
+$usuarioLogado = (bool)$layoutGlobal['sessao']['usuarioLogado'];
+$usaModalAutenticacao = (bool)$layoutGlobal['modal']['usaModalAutenticacao'];
 
-// Contrato de modal: apenas a view da home passa usaModalAutenticacao = true.
-// Para qualquer outra view, o include do partial é suprimido.
-$usaModalAutenticacao = (bool)($usaModalAutenticacao ?? false);
+$urlHome = (string)$navegacaoGlobal['urlHome'];
+$urlAnimaisReportados = (string)$navegacaoGlobal['urlAnimaisReportados'];
+$urlReportarAnimal = (string)$navegacaoGlobal['urlReportarAnimal'];
+$urlMeuPerfil = (string)$navegacaoGlobal['urlMeuPerfil'];
+$urlLogout = (string)$navegacaoGlobal['urlLogout'];
+$urlLoginHome = (string)$navegacaoGlobal['urlLoginHome'];
+$urlCadastroHome = (string)$navegacaoGlobal['urlCadastroHome'];
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

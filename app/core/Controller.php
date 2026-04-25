@@ -17,6 +17,8 @@ abstract class Controller
     protected function view(string $view, array $data = []): void
     {
         $dadosRenderizacao = $this->normalizarDadosRenderizacao($data);
+        $dadosRenderizacao['contratoLayoutGlobal'] = $this->montarContratoLayoutGlobal($dadosRenderizacao);
+
         $arquivoView = APP_PATH . 'views/' . $view . '.php';
         $arquivoCabecalho = APP_PATH . 'views/layouts/header.php';
         $arquivoRodape = APP_PATH . 'views/layouts/footer.php';
@@ -53,7 +55,70 @@ abstract class Controller
         $dados['tituloPagina'] = $tituloNormalizado;
         $dados['title'] = $tituloNormalizado;
 
+        // Contrato de modal e mensagens globais da home (legado compatível).
+        $dados['usaModalAutenticacao'] = (bool)($dados['usaModalAutenticacao'] ?? false);
+        $dados['modalAbertoAtual'] = $this->normalizarTextoRenderizacao($dados['modalAbertoAtual'] ?? null);
+
+        $dados['mensagemSucessoHome'] = $this->normalizarTextoRenderizacao($dados['mensagemSucessoHome'] ?? null);
+        $dados['mensagemErroLogin'] = $this->normalizarTextoRenderizacao($dados['mensagemErroLogin'] ?? null);
+        $dados['mensagemErroCadastro'] = $this->normalizarTextoRenderizacao($dados['mensagemErroCadastro'] ?? null);
+        $dados['mensagemSucessoCadastro'] = $this->normalizarTextoRenderizacao($dados['mensagemSucessoCadastro'] ?? null);
+
         return $dados;
+    }
+
+    /**
+     * Normaliza qualquer valor de renderização textual para string segura.
+     */
+    private function normalizarTextoRenderizacao(mixed $valor): string
+    {
+        return is_string($valor) ? $valor : '';
+    }
+
+    /**
+     * Contrato global de layout compartilhado entre header/footer e views.
+     *
+     * Mantém URLs no padrão legado (query string) para preservar compatibilidade.
+     */
+    private function montarContratoLayoutGlobal(array $dadosRenderizacao): array
+    {
+        $tituloDocumento = (string)($dadosRenderizacao['tituloPagina'] ?? 'Animal SOS');
+
+        return [
+            'versao' => 1,
+            'tituloDocumento' => $tituloDocumento,
+            'navegacao' => $this->obterUrlsNavegacaoGlobais(),
+            'modal' => [
+                'usaModalAutenticacao' => (bool)($dadosRenderizacao['usaModalAutenticacao'] ?? false),
+                'modalAbertoAtual' => $this->normalizarTextoRenderizacao($dadosRenderizacao['modalAbertoAtual'] ?? ''),
+            ],
+            'sessao' => [
+                'usuarioLogado' => !empty($_SESSION['usuario_id']),
+            ],
+            'flash' => [
+                'mensagemSucessoHome' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemSucessoHome'] ?? ''),
+                'mensagemErroLogin' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemErroLogin'] ?? ''),
+                'mensagemErroCadastro' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemErroCadastro'] ?? ''),
+                'mensagemSucessoCadastro' => $this->normalizarTextoRenderizacao($dadosRenderizacao['mensagemSucessoCadastro'] ?? ''),
+            ],
+        ];
+    }
+
+    /**
+     * URLs globais de navegação usadas pelos layouts.
+     * Mantém padrão legado por querystring para compatibilidade.
+     */
+    private function obterUrlsNavegacaoGlobais(): array
+    {
+        return [
+            'urlHome' => BASE_URL . '/index.php?c=paginas&a=home',
+            'urlAnimaisReportados' => BASE_URL . '/index.php?c=animal&a=listar',
+            'urlReportarAnimal' => BASE_URL . '/index.php?c=animal&a=reportar',
+            'urlMeuPerfil' => BASE_URL . '/index.php?c=usuario&a=meuPerfil',
+            'urlLogout' => BASE_URL . '/index.php?c=auth&a=logout',
+            'urlLoginHome' => BASE_URL . '/index.php?c=paginas&a=home#login',
+            'urlCadastroHome' => BASE_URL . '/index.php?c=paginas&a=home#cadastro',
+        ];
     }
 
     /**

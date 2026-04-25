@@ -1,6 +1,12 @@
 <?php
-// $urlHome, $urlAnimaisReportados e $urlReportarAnimal são definidos em header.php,
-// que sempre é incluído antes deste arquivo pelo Controller base.
+require_once APP_PATH . 'views/layouts/_contrato_layout.php';
+
+$layoutGlobal = normalizarContratoLayoutGlobal($contratoLayoutGlobal ?? []);
+$navegacaoGlobal = $layoutGlobal['navegacao'];
+
+$urlHome = (string)$navegacaoGlobal['urlHome'];
+$urlAnimaisReportados = (string)$navegacaoGlobal['urlAnimaisReportados'];
+$urlReportarAnimal = (string)$navegacaoGlobal['urlReportarAnimal'];
 ?>
 </main>
 

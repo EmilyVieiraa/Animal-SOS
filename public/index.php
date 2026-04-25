@@ -1,140 +1,241 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../app/config/config.php';  // define constantes, sessão e autoload
-require_once __DIR__ . '/../app/config/database.php'; // singleton PDO (espera config.php já carregado)
-require_once __DIR__ . '/../vendor/autoload.php';     // Composer (PHPMailer, Symfony UUID, etc.)
-// Mailer.php não precisa de include explícito: o spl_autoload de config.php cobre app/core/.
-// UuidHelper é carregado por autoload (app/helpers).
+bootstrapAplicacao();
 
-// Caminho base derivado de BASE_URL (definido em config.php).
-// Centraliza a configuração: alterar BASE_URL já atualiza o roteador automaticamente.
-$caminhoBase = APP_BASE_PATH;
+$path = obterPathRequisicaoNormalizado();
+$destino = resolverDestinoRota($path);
 
-/**
- * Lê o path atual (sem querystring)
- */
-$uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+if ($destino === null) {
+    encerrarComErroHttp(404, 'Rota não encontrada.');
+}
+
+injetarParametrosRotaEmGet($destino['params']);
+despacharControllerAcao($destino['controller'], $destino['action']);
 
 /**
- * Remove o prefixo de instalação do path, se existir.
- * Ex.: /animalSOS/public/denuncias → /denuncias
+ * Carrega configurações base, banco e autoload do Composer.
+ *
+ * Contrato atual:
+ * - config.php define constantes globais, sessão e autoload local.
+ * - database.php depende de constantes já definidas em config.php.
  */
-if ($caminhoBase !== '' && str_starts_with($uriPath, $caminhoBase)) {
-    $uriPath = substr($uriPath, strlen($caminhoBase));
-    if ($uriPath === '') $uriPath = '/';
+function bootstrapAplicacao(): void
+{
+    require_once __DIR__ . '/../app/config/config.php';
+    require_once __DIR__ . '/../app/config/database.php';
+    require_once __DIR__ . '/../vendor/autoload.php';
 }
 
 /**
- * Normaliza: "/" ou "/denuncias/123"
+ * Extrai e normaliza o path da requisição atual, removendo o prefixo de instalação.
  */
-$path = '/' . trim($uriPath, '/');
-if ($path === '//') $path = '/';
+function obterPathRequisicaoNormalizado(): string
+{
+    $caminhoBase = APP_BASE_PATH;
+    $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+
+    if ($caminhoBase !== '' && str_starts_with($uriPath, $caminhoBase)) {
+        $uriPath = substr($uriPath, strlen($caminhoBase));
+        if ($uriPath === '') {
+            $uriPath = '/';
+        }
+    }
+
+    $path = '/' . trim($uriPath, '/');
+
+    return $path === '//' ? '/' : $path;
+}
 
 /**
- * Define Controller/Action padrão
+ * Catálogo único de rotas amigáveis fixas.
+ *
+ * Observação:
+ * - Mantém aliases legados para compatibilidade controlada.
  */
-$controllerClass = 'AuthController';
-$action          = 'login';
-$params          = [];
+function catalogoRotasAmigaveis(): array
+{
+    return [
+        '/' => ['PaginasController', 'home'],
+        '/login' => ['AuthController', 'login'],
+        '/logout' => ['AuthController', 'logout'],
+        '/esqueci' => ['AuthController', 'esqueciSenha'],
+        '/redefinir-senha' => ['AuthController', 'redefinirSenha'],
+        '/salvar-nova-senha' => ['AuthController', 'salvarNovaSenha'],
+
+        // [LEGADO] Alias mantido por compatibilidade com links externos.
+        '/home' => ['PaginasController', 'home'],
+
+        '/perfil' => ['UsuarioController', 'meuPerfil'],
+
+        // [LEGADO] Alias mantido por compatibilidade com links/e-mails antigos.
+        '/senha' => ['AuthController', 'esqueciSenha'],
+
+        '/denuncias' => ['AnimalController', 'listar'],
+        '/reportar' => ['AnimalController', 'reportar'],
+
+        '/comentarios' => ['ComentarioController', 'adicionar'],
+    ];
+}
 
 /**
- * Rotas amigáveis (fixas)
+ * Resolve controller/action/params a partir da rota atual.
+ *
+ * Ordem de resolução preservada:
+ * 1) rota amigável fixa
+ * 2) rota amigável dinâmica
+ * 3) fallback legado c/a
  */
-$routes = [
-    '/' => ['PaginasController', 'home'],
-    '/login'     => ['AuthController', 'login'],
-    '/logout'    => ['AuthController', 'logout'],
-    '/esqueci'            => ['AuthController', 'esqueciSenha'],
-    '/redefinir-senha'    => ['AuthController', 'redefinirSenha'],
-    '/salvar-nova-senha'  => ['AuthController', 'salvarNovaSenha'],
+function resolverDestinoRota(string $path): ?array
+{
+    $rotasFixas = catalogoRotasAmigaveis();
 
-    // [LEGADO] /home é alias de /. Manter até confirmação de que não há links externos.
-    '/home'      => ['PaginasController', 'home'],
+    if (isset($rotasFixas[$path])) {
+        [$controllerClass, $action] = $rotasFixas[$path];
 
-    '/perfil'    => ['UsuarioController', 'meuPerfil'],
-    // [LEGADO] /senha é alias de /esqueci. Manter até confirmação de que não há links ou e-mails antigos.
-    '/senha'     => ['AuthController', 'esqueciSenha'],
+        return [
+            'controller' => $controllerClass,
+            'action' => $action,
+            'params' => [],
+            'origem' => 'amigavel_fixa',
+        ];
+    }
 
-    '/denuncias' => ['AnimalController', 'listar'],
-    '/reportar'  => ['AnimalController', 'reportar'],
+    $destinoDinamico = resolverRotaAmigavelDinamica($path);
+    if ($destinoDinamico !== null) {
+        return $destinoDinamico;
+    }
 
-    // POST
-    '/comentarios' => ['ComentarioController', 'adicionar'],
-];
+    return resolverFallbackLegadoCA();
+}
 
 /**
- * 1) Match de rota fixa
+ * Regras de rotas amigáveis dinâmicas.
  */
-if (isset($routes[$path])) {
-    [$controllerClass, $action] = $routes[$path];
-} else {
-    /**
-     * 2) Rotas dinâmicas
-     * - /denuncias/{id} → detalhes do animal
-     */
+function resolverRotaAmigavelDinamica(string $path): ?array
+{
     $segments = array_values(array_filter(explode('/', trim($path, '/'))));
 
+    // /denuncias/{id}
     if (count($segments) === 2 && $segments[0] === 'denuncias') {
-        $controllerClass = 'AnimalController';
-        $action = 'detalhes';
-        $params['id'] = $segments[1];
-    } else {
-        /**
-         * 3) [LEGADO] Fallback query-string (?c=...&a=...)
-         *
-         * Mantido por compatibilidade enquanto existirem links ?c=...&a=... nas views ou
-         * nos e-mails transacionais gerados pelo sistema.
-         * Condição para remoção: confirmar que nenhuma view, e-mail ou redirect usa
-         * query-string com c/a, e que todas as rotas amigáveis acima as cobrem.
-         */
-        $c = $_GET['c'] ?? null;
-        $a = $_GET['a'] ?? null;
+        return [
+            'controller' => 'AnimalController',
+            'action' => 'detalhes',
+            'params' => ['id' => $segments[1]],
+            'origem' => 'amigavel_dinamica',
+        ];
+    }
 
-        if ($c && $a) {
-            $controllerClass = ucfirst(strtolower((string)$c)) . 'Controller';
-            $action = (string)$a;
-        } else {
-            // Se não bater em nada, 404
-            http_response_code(404);
-            echo 'Rota não encontrada.';
-            exit;
-        }
+    return null;
+}
+
+/**
+ * [LEGADO] Resolve rota por query-string (?c=...&a=...).
+ *
+ * Mantido por compatibilidade enquanto houver dependência real nos módulos.
+ */
+function resolverFallbackLegadoCA(): ?array
+{
+    $controllerBruto = $_GET['c'] ?? null;
+    $acaoBruta = $_GET['a'] ?? null;
+
+    if (!$controllerBruto || !$acaoBruta) {
+        return null;
+    }
+
+    $controllerNormalizado = normalizarNomeControllerLegado((string)$controllerBruto);
+    $acaoNormalizada = normalizarNomeAcaoLegada((string)$acaoBruta);
+
+    if ($controllerNormalizado === null || $acaoNormalizada === null) {
+        return null;
+    }
+
+    return [
+        'controller' => $controllerNormalizado,
+        'action' => $acaoNormalizada,
+        'params' => [],
+        'origem' => 'fallback_legado_ca',
+    ];
+}
+
+/**
+ * Normaliza o nome do controller vindo do fallback legado c/a.
+ *
+ * Mantém o contrato histórico de transformar em PascalCase + sufixo Controller.
+ */
+function normalizarNomeControllerLegado(string $controllerBruto): ?string
+{
+    $controllerBruto = trim($controllerBruto);
+    if ($controllerBruto === '') {
+        return null;
+    }
+
+    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $controllerBruto)) {
+        return null;
+    }
+
+    return ucfirst(strtolower($controllerBruto)) . 'Controller';
+}
+
+/**
+ * Normaliza o nome da action vinda do fallback legado c/a.
+ */
+function normalizarNomeAcaoLegada(string $acaoBruta): ?string
+{
+    $acaoBruta = trim($acaoBruta);
+    if ($acaoBruta === '') {
+        return null;
+    }
+
+    if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $acaoBruta)) {
+        return null;
+    }
+
+    return $acaoBruta;
+}
+
+/**
+ * Injeta parâmetros de rota amigável no $_GET para preservar contrato legado dos controllers.
+ */
+function injetarParametrosRotaEmGet(array $params): void
+{
+    foreach ($params as $chave => $valor) {
+        $_GET[$chave] = $valor;
     }
 }
 
 /**
- * Injeta params (id) no $_GET para reutilizar seus controllers sem alterações
+ * Carrega o controller e executa a action resolvida.
  */
-foreach ($params as $k => $v) {
-    $_GET[$k] = $v;
+function despacharControllerAcao(string $controllerClass, string $action): void
+{
+    $controllerFile = APP_PATH . 'controllers/' . $controllerClass . '.php';
+
+    if (!file_exists($controllerFile)) {
+        encerrarComErroHttp(404, 'Controller não encontrado.');
+    }
+
+    require_once $controllerFile;
+
+    if (!class_exists($controllerClass)) {
+        encerrarComErroHttp(500, 'Classe do controller inválida.');
+    }
+
+    $controller = new $controllerClass();
+
+    if (!method_exists($controller, $action)) {
+        encerrarComErroHttp(404, 'Ação não encontrada.');
+    }
+
+    $controller->{$action}();
 }
 
 /**
- * Carrega controller e executa action
+ * Resposta HTTP de erro padronizada para a camada de entrada.
  */
-$controllerFile = APP_PATH . 'controllers/' . $controllerClass . '.php';
-
-if (!file_exists($controllerFile)) {
-    http_response_code(404);
-    echo "Controller não encontrado.";
+function encerrarComErroHttp(int $statusCode, string $mensagem): void
+{
+    http_response_code($statusCode);
+    echo $mensagem;
     exit;
 }
-
-require_once $controllerFile;
-
-if (!class_exists($controllerClass)) {
-    http_response_code(500);
-    echo "Classe do controller inválida.";
-    exit;
-}
-
-$controller = new $controllerClass();
-
-if (!method_exists($controller, $action)) {
-    http_response_code(404);
-    echo "Ação não encontrada.";
-    exit;
-}
-
-$controller->{$action}();
