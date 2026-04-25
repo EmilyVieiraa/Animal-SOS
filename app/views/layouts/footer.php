@@ -1,7 +1,6 @@
 <?php
-$urlHome = BASE_URL . '/index.php?c=paginas&a=home';
-$urlAnimaisReportados = BASE_URL . '/index.php?c=animal&a=listar';
-$urlReportarAnimal = BASE_URL . '/index.php?c=animal&a=reportar';
+// $urlHome, $urlAnimaisReportados e $urlReportarAnimal são definidos em header.php,
+// que sempre é incluído antes deste arquivo pelo Controller base.
 ?>
 </main>
 

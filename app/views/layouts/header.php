@@ -1,17 +1,25 @@
 <?php
+// Contrato de sessão: $_SESSION['usuario_id'] é definido por AuthController no login.
 $usuarioLogado = !empty($_SESSION['usuario_id']);
 
-$tituloDocumento = (string)($tituloPagina ?? $title ?? 'Animal SOS');
+// Contrato de título: Controller::normalizarDadosRenderizacao() garante que
+// $tituloPagina está sempre definido antes de chegar aqui.
+$tituloDocumento = (string)($tituloPagina ?? 'Animal SOS');
 
-$urlHome = BASE_URL . '/index.php?c=paginas&a=home';
+// URLs de navegação globais (contrato atual: query string).
+$urlHome              = BASE_URL . '/index.php?c=paginas&a=home';
 $urlAnimaisReportados = BASE_URL . '/index.php?c=animal&a=listar';
-$urlReportarAnimal = BASE_URL . '/index.php?c=animal&a=reportar';
-$urlMeuPerfil = BASE_URL . '/index.php?c=usuario&a=meuPerfil';
-$urlLogout = BASE_URL . '/index.php?c=auth&a=logout';
+$urlReportarAnimal    = BASE_URL . '/index.php?c=animal&a=reportar';
+$urlMeuPerfil         = BASE_URL . '/index.php?c=usuario&a=meuPerfil';
+$urlLogout            = BASE_URL . '/index.php?c=auth&a=logout';
 
-// Legado compatível: a abertura dos modais de autenticação ainda depende da home.
-$urlLoginHome = $urlHome . '#login';
+// Legado compatível: modais de login/cadastro ficam na home e são abertos por âncora.
+$urlLoginHome   = $urlHome . '#login';
 $urlCadastroHome = $urlHome . '#cadastro';
+
+// Contrato de modal: apenas a view da home passa usaModalAutenticacao = true.
+// Para qualquer outra view, o include do partial é suprimido.
+$usaModalAutenticacao = (bool)($usaModalAutenticacao ?? false);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -77,7 +85,7 @@ $urlCadastroHome = $urlHome . '#cadastro';
   </div>
 </header>
 
-<?php if (!empty($usaModalAutenticacao)): ?>
+<?php if ($usaModalAutenticacao): ?>
 <?php require APP_PATH . 'views/partials/_modais_autenticacao.php'; ?>
 <?php endif; ?>
 

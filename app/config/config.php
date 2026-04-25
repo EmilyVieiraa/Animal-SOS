@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-// Ambiente
-define('APP_ENV', 'local'); // local | prod
-
 $envConfig = static function (string $chave, ?string $padrao = null): ?string {
     $valor = $_ENV[$chave] ?? $_SERVER[$chave] ?? getenv($chave);
 
@@ -15,6 +12,10 @@ $envConfig = static function (string $chave, ?string $padrao = null): ?string {
     return (string)$valor;
 };
 
+// Ambiente (apenas local|prod para manter contrato estável)
+$appEnv = mb_strtolower((string)$envConfig('APP_ENV', 'local'));
+define('APP_ENV', $appEnv === 'prod' ? 'prod' : 'local');
+
 // Erros (dev vs prod)
 if (APP_ENV === 'prod') {
     ini_set('display_errors', '0');
@@ -24,15 +25,28 @@ if (APP_ENV === 'prod') {
     error_reporting(E_ALL);
 }
 
-// URL Base (evite barra final para não dar // nos links)
-define('BASE_URL', 'http://localhost/animalSOS/public');
+// URL Base (evite barra final para não gerar // nos links)
+$baseUrlPadrao = 'http://localhost/animalSOS/public';
+$baseUrlConfigurada = (string)$envConfig('BASE_URL', $baseUrlPadrao);
+$baseUrlNormalizada = rtrim($baseUrlConfigurada, '/');
+
+if ($baseUrlNormalizada === '') {
+    $baseUrlNormalizada = $baseUrlPadrao;
+}
+
+define('BASE_URL', $baseUrlNormalizada);
+
+// Caminho base da aplicação, extraído de BASE_URL automaticamente.
+// Usado pelo roteador para remover o prefixo de instalação do REQUEST_URI.
+// Evita duplicidade: alterar BASE_URL já atualiza o roteador.
+define('APP_BASE_PATH', (string)(parse_url(BASE_URL, PHP_URL_PATH) ?: ''));
 
 // Timezone
 date_default_timezone_set('America/Sao_Paulo');
 
 // Configurações do Banco de Dados
 define('DB_HOST', 'localhost');
-define('DB_PORT', '3306');        // ADICIONADO (seu Database usa isso)
+define('DB_PORT', '3306');
 define('DB_NAME', 'animal_sos');
 define('DB_USER', 'root');
 define('DB_PASS', '');
@@ -75,6 +89,7 @@ spl_autoload_register(function (string $class): void {
         APP_PATH . 'core/',
         APP_PATH . 'controllers/',
         APP_PATH . 'models/',
+        APP_PATH . 'helpers/',
     ];
 
     foreach ($paths as $path) {

@@ -2,8 +2,18 @@
 
 declare(strict_types=1); // Ativa tipagem estrita (mais segurança e menos erros silenciosos)
 
-// Carrega as constantes e configs globais (DB_HOST, DB_PORT, APP_ENV, etc.)
-require_once __DIR__ . '/config.php';
+// Contrato de bootstrap: espera que as constantes DB_HOST, DB_PORT, DB_NAME,
+// DB_USER, DB_PASS, DB_CHARSET e APP_ENV já estejam definidas por config.php,
+// carregado pelo entrypoint (public/index.php) antes deste arquivo.
+$constantesObrigatorias = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS', 'DB_CHARSET', 'APP_ENV'];
+
+foreach ($constantesObrigatorias as $constante) {
+    if (!defined($constante)) {
+        throw new RuntimeException(
+            'Bootstrap inválido: constante obrigatória ausente em config.php: ' . $constante
+        );
+    }
+}
 
 final class Database
 {

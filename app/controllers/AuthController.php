@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once APP_PATH . 'helpers/view_helpers.php';
+
 final class AuthController extends Controller
 {
     private const CSRF_CONTEXTO_LOGIN = 'auth_login';
@@ -92,7 +94,7 @@ final class AuthController extends Controller
      */
     private function falharLogin(string $mensagem): void
     {
-        $_SESSION['flash_error'] = $mensagem;
+        flashDefinir('flash_error', $mensagem);
         $_SESSION['open_modal']  = 'login';
         $this->redirect('/index.php?c=paginas&a=home');
     }
@@ -185,7 +187,7 @@ final class AuthController extends Controller
 
         // Closure de erro: grava flash e redireciona para home com modal de cadastro aberto.
         $erroCadastro = function (string $mensagem): void {
-            $_SESSION['flash_registro_erro'] = $mensagem;
+            flashDefinir('flash_registro_erro', $mensagem);
             $_SESSION['open_modal'] = 'cadastro';
             $this->redirect('/index.php?c=paginas&a=home');
         };
@@ -208,7 +210,7 @@ final class AuthController extends Controller
         $cadastroCriado = $this->usuarioModel->criar($dados);
 
         if ($cadastroCriado) {
-            $_SESSION['flash_registro_sucesso'] = 'Cadastro realizado com sucesso. Faça login.';
+            flashDefinir('flash_registro_sucesso', 'Cadastro realizado com sucesso. Faça login.');
             $_SESSION['open_modal'] = 'login';
             $this->redirect('/index.php?c=paginas&a=home');
             return;
@@ -597,7 +599,7 @@ final class AuthController extends Controller
 
         // Chave 'flash_success' alinhada com o que home.php já lê.
         // (corrige divergência anterior: controller gravava 'flash_sucesso')
-        $_SESSION['flash_success'] = 'Senha alterada com sucesso! Faça login.';
+        flashDefinir('flash_success', 'Senha alterada com sucesso! Faça login.');
 
         $this->redirect('/index.php?c=auth&a=login');
     }
@@ -614,14 +616,6 @@ final class AuthController extends Controller
 
     private function validarCsrf(string $contexto): bool
     {
-        $tokenSessao = $_SESSION['_csrf_tokens'][$contexto] ?? null;
-        $tokenEnviado = (string)($_POST['_csrf_token'] ?? '');
-
-        unset($_SESSION['_csrf_tokens'][$contexto]);
-
-        return is_string($tokenSessao)
-            && $tokenSessao !== ''
-            && $tokenEnviado !== ''
-            && hash_equals($tokenSessao, $tokenEnviado);
+        return csrfValidarConsumo($contexto);
     }
 }

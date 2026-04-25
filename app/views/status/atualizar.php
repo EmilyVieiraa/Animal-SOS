@@ -1,5 +1,5 @@
 <?php
-function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
+require_once APP_PATH . 'helpers/view_helpers.php';
 ?>
 
 <h1>Atualizar status</h1>

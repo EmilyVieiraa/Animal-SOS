@@ -27,13 +27,13 @@ final class ComentarioController extends Controller
 
         // precisa estar logado
         if (empty($_SESSION['usuario_id'])) {
-            $_SESSION['flash_error'] = 'Você precisa estar logado para comentar.';
+            flashDefinir('flash_error', 'Você precisa estar logado para comentar.');
             $this->redirect('/index.php?c=auth&a=login&return=' . urlencode($urlRetorno));
             return;
         }
 
         if (!$this->validarCsrf(self::CSRF_CONTEXTO_ADICIONAR)) {
-            $_SESSION['flash_error'] = 'Token de segurança inválido ou expirado. Tente novamente.';
+            flashDefinir('flash_error', 'Token de segurança inválido ou expirado. Tente novamente.');
             $this->redirect($urlRetorno);
             return;
         }
@@ -43,7 +43,7 @@ final class ComentarioController extends Controller
 
         $erroValidacao = $this->validarDadosComentario($animalId, $mensagem);
         if ($erroValidacao !== null) {
-            $_SESSION['flash_error'] = $erroValidacao;
+            flashDefinir('flash_error', $erroValidacao);
             $this->redirect($urlRetorno);
             return;
         }
@@ -55,18 +55,18 @@ final class ComentarioController extends Controller
                 'mensagem'   => $mensagem,
             ]);
         } catch (Throwable $erro) {
-            $_SESSION['flash_error'] = 'Não foi possível publicar o comentário. Tente novamente.';
+            flashDefinir('flash_error', 'Não foi possível publicar o comentário. Tente novamente.');
             $this->redirect($urlRetorno);
             return;
         }
 
         if (!$comentarioCriado) {
-            $_SESSION['flash_error'] = 'Não foi possível publicar o comentário. Tente novamente.';
+            flashDefinir('flash_error', 'Não foi possível publicar o comentário. Tente novamente.');
             $this->redirect($urlRetorno);
             return;
         }
 
-        $_SESSION['flash_success'] = 'Comentário publicado com sucesso.';
+        flashDefinir('flash_success', 'Comentário publicado com sucesso.');
         $this->redirect($urlRetorno);
     }
 
@@ -98,15 +98,7 @@ final class ComentarioController extends Controller
 
     private function validarCsrf(string $contexto): bool
     {
-        $tokenSessao = $_SESSION['_csrf_tokens'][$contexto] ?? null;
-        $tokenEnviado = (string)($_POST['_csrf_token'] ?? '');
-
-        unset($_SESSION['_csrf_tokens'][$contexto]);
-
-        return is_string($tokenSessao)
-            && $tokenSessao !== ''
-            && $tokenEnviado !== ''
-            && hash_equals($tokenSessao, $tokenEnviado);
+        return csrfValidarConsumo($contexto);
     }
 
 }

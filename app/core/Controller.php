@@ -14,51 +14,46 @@ abstract class Controller
      * Renderiza uma view dentro do layout padrão.
      * Ex.: $this->view('auth/login', ['erro' => '...']);
      */
-    /**protected function view(string $view, array $data = []): void
-    {
-        // Transforma as chaves do array em variáveis na view
-        // Ex.: $data['erro'] vira $erro
-        extract($data);
-
-        // 1. Cabeçalho (HTML inicial + menu)
-        require APP_PATH . 'views/layouts/header.php';
-
-        // 2. Conteúdo da página (home, listar, detalhes, etc.)
-        require APP_PATH . 'views/' . $view . '.php';
-
-        // 3. Rodapé (o mesmo da home)
-        require APP_PATH . 'views/layouts/footer.php';
-
-        if (!file_exists($viewFile)) {
-            http_response_code(404);
-            echo "View não encontrada: {$view}";
-            exit;
-        }
-
-        // Layout padrão
-        $header = APP_PATH . 'views/layouts/header.php';
-        $footer = APP_PATH . 'views/layouts/footer.php';
-
-        if (file_exists($header)) require $header;
-        require $viewFile;
-        if (file_exists($footer)) require $footer;
-    }*/
-
     protected function view(string $view, array $data = []): void
     {
-        extract($data);
+        $dadosRenderizacao = $this->normalizarDadosRenderizacao($data);
+        $arquivoView = APP_PATH . 'views/' . $view . '.php';
+        $arquivoCabecalho = APP_PATH . 'views/layouts/header.php';
+        $arquivoRodape = APP_PATH . 'views/layouts/footer.php';
 
-        $viewFile = APP_PATH . 'views/' . $view . '.php';
-
-        if (!file_exists($viewFile)) {
+        if (!file_exists($arquivoView)) {
             http_response_code(404);
             echo "View não encontrada: {$view}";
             exit;
         }
 
-        require APP_PATH . 'views/layouts/header.php';
-        require $viewFile;
-        require APP_PATH . 'views/layouts/footer.php';
+        if (!file_exists($arquivoCabecalho) || !file_exists($arquivoRodape)) {
+            http_response_code(500);
+            echo 'Layout global não encontrado.';
+            exit;
+        }
+
+        // Mantém o contrato legado com views existentes, reduzindo colisões de variáveis locais.
+        extract($dadosRenderizacao, EXTR_SKIP);
+
+        require $arquivoCabecalho;
+        require $arquivoView;
+        require $arquivoRodape;
+    }
+
+    /**
+     * Contrato global de renderização (compatível):
+     * - Mantém suporte simultâneo a `tituloPagina` e `title`.
+     * - Quando apenas um for enviado, espelha para o outro.
+     */
+    private function normalizarDadosRenderizacao(array $dados): array
+    {
+        $tituloNormalizado = (string)($dados['tituloPagina'] ?? $dados['title'] ?? 'Animal SOS');
+
+        $dados['tituloPagina'] = $tituloNormalizado;
+        $dados['title'] = $tituloNormalizado;
+
+        return $dados;
     }
 
     /**

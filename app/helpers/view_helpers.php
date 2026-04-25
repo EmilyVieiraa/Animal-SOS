@@ -5,12 +5,27 @@ if (!defined('CSRF_CONTEXTO_COMENTARIO_ADICIONAR')) {
     define('CSRF_CONTEXTO_COMENTARIO_ADICIONAR', 'comentario_adicionar');
 }
 
+// ============================================================
+// Escape HTML
+// ============================================================
+
 if (!function_exists('h')) {
     function h(mixed $valor): string
     {
         return htmlspecialchars((string)$valor, ENT_QUOTES, 'UTF-8');
     }
 }
+
+if (!function_exists('escaparHtml')) {
+    function escaparHtml(mixed $valor): string
+    {
+        return h($valor);
+    }
+}
+
+// ============================================================
+// CSRF
+// ============================================================
 
 if (!function_exists('csrfToken')) {
     function csrfToken(string $contexto): string
@@ -34,6 +49,42 @@ if (!function_exists('csrfInput')) {
     }
 }
 
+if (!function_exists('csrfValidarConsumo')) {
+    /**
+     * Valida token CSRF e consome o token de sessão do contexto.
+     */
+    function csrfValidarConsumo(string $contexto, ?string $tokenEnviado = null): bool
+    {
+        $tokenSessao = $_SESSION['_csrf_tokens'][$contexto] ?? null;
+        $tokenEnviadoFinal = (string)($tokenEnviado ?? ($_POST['_csrf_token'] ?? ''));
+
+        unset($_SESSION['_csrf_tokens'][$contexto]);
+
+        return is_string($tokenSessao)
+            && $tokenSessao !== ''
+            && $tokenEnviadoFinal !== ''
+            && hash_equals($tokenSessao, $tokenEnviadoFinal);
+    }
+}
+
+if (!function_exists('tokenCsrf')) {
+    function tokenCsrf(string $contexto): string
+    {
+        return csrfToken($contexto);
+    }
+}
+
+if (!function_exists('inputCsrf')) {
+    function inputCsrf(string $contexto): string
+    {
+        return csrfInput($contexto);
+    }
+}
+
+// ============================================================
+// Flash session
+// ============================================================
+
 if (!function_exists('flashConsultar')) {
     function flashConsultar(string $chave): ?string
     {
@@ -52,6 +103,24 @@ if (!function_exists('flashConsumir')) {
         $valor = flashConsultar($chave);
         unset($_SESSION[$chave]);
         return $valor;
+    }
+}
+
+if (!function_exists('flashDefinir')) {
+    function flashDefinir(string $chave, string $mensagem): void
+    {
+        $_SESSION[$chave] = $mensagem;
+    }
+}
+
+if (!function_exists('flashConsumirTexto')) {
+    /**
+     * Compatível com contratos antigos que esperam string (vazia quando ausente).
+     */
+    function flashConsumirTexto(string $chave): string
+    {
+        $valor = flashConsumir($chave);
+        return $valor ?? '';
     }
 }
 

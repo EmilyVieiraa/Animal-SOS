@@ -1,17 +1,15 @@
 <?php
 declare(strict_types=1);
 
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
+require_once __DIR__ . '/../app/config/config.php';  // define constantes, sessão e autoload
+require_once __DIR__ . '/../app/config/database.php'; // singleton PDO (espera config.php já carregado)
+require_once __DIR__ . '/../vendor/autoload.php';     // Composer (PHPMailer, Symfony UUID, etc.)
+// Mailer.php não precisa de include explícito: o spl_autoload de config.php cobre app/core/.
+// UuidHelper é carregado por autoload (app/helpers).
 
-require_once __DIR__ . '/../app/config/config.php';
-require_once __DIR__ . '/../app/config/database.php';
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../app/core/Mailer.php';
-require_once __DIR__ . '/../app/helpers/UuidHelper.php';
-
-$BASE_PATH = '/animalSOS/public';
+// Caminho base derivado de BASE_URL (definido em config.php).
+// Centraliza a configuração: alterar BASE_URL já atualiza o roteador automaticamente.
+$caminhoBase = APP_BASE_PATH;
 
 /**
  * Lê o path atual (sem querystring)
@@ -19,10 +17,11 @@ $BASE_PATH = '/animalSOS/public';
 $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
 /**
- * Remove o BASE_PATH do começo do path, se existir
+ * Remove o prefixo de instalação do path, se existir.
+ * Ex.: /animalSOS/public/denuncias → /denuncias
  */
-if ($BASE_PATH !== '' && str_starts_with($uriPath, $BASE_PATH)) {
-    $uriPath = substr($uriPath, strlen($BASE_PATH));
+if ($caminhoBase !== '' && str_starts_with($uriPath, $caminhoBase)) {
+    $uriPath = substr($uriPath, strlen($caminhoBase));
     if ($uriPath === '') $uriPath = '/';
 }
 
@@ -50,19 +49,17 @@ $routes = [
     '/redefinir-senha'    => ['AuthController', 'redefinirSenha'],
     '/salvar-nova-senha'  => ['AuthController', 'salvarNovaSenha'],
 
+    // [LEGADO] /home é alias de /. Manter até confirmação de que não há links externos.
     '/home'      => ['PaginasController', 'home'],
 
-    '/dashboard' => ['EstatisticasController', 'index'],
-
-    '/mapa'      => ['MapaController', 'index'],
-
     '/perfil'    => ['UsuarioController', 'meuPerfil'],
-    '/senha'     => ['AuthController', 'esqueciSenha'], // Alias legado mantido por compatibilidade.
+    // [LEGADO] /senha é alias de /esqueci. Manter até confirmação de que não há links ou e-mails antigos.
+    '/senha'     => ['AuthController', 'esqueciSenha'],
 
     '/denuncias' => ['AnimalController', 'listar'],
     '/reportar'  => ['AnimalController', 'reportar'],
 
-    // Comentários (POST)
+    // POST
     '/comentarios' => ['ComentarioController', 'adicionar'],
 ];
 
@@ -74,8 +71,7 @@ if (isset($routes[$path])) {
 } else {
     /**
      * 2) Rotas dinâmicas
-     * - /denuncias/{id} -> detalhes
-     * - /denuncias/{id}/status -> atualizar status
+     * - /denuncias/{id} → detalhes do animal
      */
     $segments = array_values(array_filter(explode('/', trim($path, '/'))));
 
@@ -85,8 +81,12 @@ if (isset($routes[$path])) {
         $params['id'] = $segments[1];
     } else {
         /**
-         * 3) Fallback: modo antigo (?c=...&a=...)
-         * Isso garante compatibilidade caso você ainda tenha links antigos nas views.
+         * 3) [LEGADO] Fallback query-string (?c=...&a=...)
+         *
+         * Mantido por compatibilidade enquanto existirem links ?c=...&a=... nas views ou
+         * nos e-mails transacionais gerados pelo sistema.
+         * Condição para remoção: confirmar que nenhuma view, e-mail ou redirect usa
+         * query-string com c/a, e que todas as rotas amigáveis acima as cobrem.
          */
         $c = $_GET['c'] ?? null;
         $a = $_GET['a'] ?? null;

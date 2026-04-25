@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once APP_PATH . 'helpers/view_helpers.php';
+
 final class PaginasController extends Controller
 {
     private const VIEW_HOME = 'paginas/home';
@@ -20,10 +22,10 @@ final class PaginasController extends Controller
             'tituloPagina' => self::TITULO_HOME,
             'usaModalAutenticacao' => true,
             'modalAbertoAtual' => $this->consumirModalAbertoDaSessao(),
-            'mensagemSucessoHome' => $this->consumirTextoSessao('flash_success'),
-            'mensagemErroLogin' => $this->consumirTextoSessao('flash_error'),
-            'mensagemErroCadastro' => $this->consumirTextoSessao('flash_registro_erro'),
-            'mensagemSucessoCadastro' => $this->consumirTextoSessao('flash_registro_sucesso'),
+            'mensagemSucessoHome' => flashConsumirTexto('flash_success'),
+            'mensagemErroLogin' => flashConsumirTexto('flash_error'),
+            'mensagemErroCadastro' => flashConsumirTexto('flash_registro_erro'),
+            'mensagemSucessoCadastro' => flashConsumirTexto('flash_registro_sucesso'),
         ];
     }
 
@@ -48,15 +50,4 @@ final class PaginasController extends Controller
         };
     }
 
-    private function consumirTextoSessao(string $chave): string
-    {
-        if (!isset($_SESSION[$chave])) {
-            return '';
-        }
-
-        $valor = $_SESSION[$chave];
-        unset($_SESSION[$chave]);
-
-        return is_string($valor) ? $valor : '';
-    }
 }
