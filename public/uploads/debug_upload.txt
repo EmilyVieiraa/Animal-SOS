@@ -127,45 +127,8 @@ MOVE 0: ok=1 dest=C:\xampp\htdocs\AnimalSOS/public/uploads/animais/3cdf5d6b999ea
             "image/png"
         ],
         "tmp_name": [
-            "C:\\xampp\\tmp\\phpAD62.tmp",
-            "C:\\xampp\\tmp\\phpAD63.tmp"
-        ],
-        "error": [
-            0,
-            0
-        ],
-        "size": [
-            1406317,
-            1650997
-        ]
-    },
-    "after_mkdir_is_dir": true,
-    "after_mkdir_is_writable": true
-}
-
-FILE 0: {
-    "name": "logo.png",
-    "size": 1406317,
-    "error": 0,
-    "tmp_name": "C:\\xampp\\tmp\\phpAD62.tmp",
-    "is_uploaded_file": true
-}
-MOVE 0: ok=1 dest=C:\xampp\htdocs\AnimalSOS/public/uploads/animais/937b6c851db03bc4bc64646dd63c418e.png
-
-FILE 1: {
-    "name": "img_fundo.png",
-    "size": 1650997,
-    "error": 0,
-    "tmp_name": "C:\\xampp\\tmp\\phpAD63.tmp",
-    "is_uploaded_file": true
-}
-MOVE 1: ok=1 dest=C:\xampp\htdocs\AnimalSOS/public/uploads/animais/9835618479ad8d8987ff48b719d0b57a.png
-
-{
-    "time": "2026-01-10T15:49:47-03:00",
-    "field": "fotos",
-    "uploadDir": "C:\\xampp\\htdocs\\AnimalSOS/public/uploads/animais",
     "is_dir(uploadDir)": true,
+            [Este arquivo contém logs de debug e foi limpo. Novos logs internos são registrados via error_log().]
     "is_writable(uploadDir)": true,
     "ini": {
         "file_uploads": "1",

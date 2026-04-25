@@ -1456,6 +1456,17 @@ body:has(#cadastroToggle:checked){
   gap: 14px !important;
 }
 
+.report-error{
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fdecea;
+  color: #c82333;
+  font-size: 14px;
+  font-weight: 500;
+  border-left: 3px solid #c82333;
+}
+
 .report-page .form-group{
   display: grid !important;
   gap: 8px !important;
@@ -1636,20 +1647,16 @@ body:has(#cadastroToggle:checked){
   background: #fff;
 }
 
-.denuncia-detalhe .flash{
+.flash{
   margin: 12px 0;
   font-size: 14px;
   font-weight: 500;
   width: 100%;
 }
 
-.denuncia-detalhe .flash--success{
-  color: #1e7e34;
-}
-
-.denuncia-detalhe .flash--error{
-  color: #c82333;
-}
+.flash--success{ color: #1e7e34; }
+.flash--error  { color: #c82333; }
+.flash--info   { color: #0c5460; }
 
 /* 2. HERO DA DENÚNCIA */
 

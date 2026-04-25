@@ -5,12 +5,23 @@ final class Animal extends Model
 {
     /**
      * Busca um animal reportado pelo seu ID.
+     * Retorna sempre com campos normalizados (usuario_id, data_criacao).
      */
-    public function buscarPorId(string $denunciaId): ?array
+    public function buscarPorId(string $animalId): ?array
     {
         $consultaSql = "
             SELECT
-                a.*,
+                a.id,
+                a.criado_por AS usuario_id,
+                a.titulo,
+                a.foto,
+                a.descricao,
+                a.especie,
+                a.cor,
+                a.condicao,
+                a.localizacao,
+                a.status,
+                a.data_hora AS data_criacao,
                 u.nome  AS usuario_nome,
                 u.email AS usuario_email,
                 u.telefone AS usuario_telefone,
@@ -22,36 +33,36 @@ final class Animal extends Model
         ";
 
         $declaracao = $this->prepare($consultaSql);
-        $declaracao->execute([':id' => $denunciaId]);
+        $declaracao->execute([':id' => $animalId]);
 
         $resultado = $declaracao->fetch();
-            if ($resultado) {
-                $this->garantirTitulo($resultado);
-            }
+        if ($resultado) {
+            $this->garantirTitulo($resultado);
+        }
         return $resultado ?: null;
     }
 
     /**
-     * Busca a ID do usuário criador/proprietário de uma denúncia.
+     * Busca a ID do usuário criador de um animal reportado.
      */
-    public function buscarDonoId(string $denunciaId): ?string
+    public function buscarDonoId(string $animalId): ?string
     {
         $consultaSql = "SELECT criado_por FROM animais_reportados WHERE id = :id LIMIT 1";
         $declaracao = $this->prepare($consultaSql);
-        $declaracao->execute([':id' => $denunciaId]);
+        $declaracao->execute([':id' => $animalId]);
 
         $resultado = $declaracao->fetchColumn();
         return $resultado !== false ? (string)$resultado : null;
     }
 
     /**
-     * Cria uma nova denúncia de animal reportado.
+     * Cria um novo registro de animal em risco.
      * Retorna o ID (UUID) criado ou null em caso de falha.
      */
-    public function criar(array $dadosDenuncia): ?string
+    public function criar(array $dadosAnimal): ?string
     {
         try {
-            $denunciaId = UuidHelper::generateStandard();
+            $animalId = UuidHelper::generateStandard();
 
             $consultaSql = "INSERT INTO animais_reportados
                     (id, criado_por, titulo, foto, descricao, especie, cor, condicao, localizacao, status)
@@ -59,43 +70,43 @@ final class Animal extends Model
 
             $declaracao = $this->prepare($consultaSql);
 
-            $declaracao->bindValue(':id', $denunciaId, PDO::PARAM_STR);
-            $declaracao->bindValue(':criado_por', (string)($dadosDenuncia['usuario_id'] ?? ''), PDO::PARAM_STR);
+            $declaracao->bindValue(':id', $animalId, PDO::PARAM_STR);
+            $declaracao->bindValue(':criado_por', (string)($dadosAnimal['usuario_id'] ?? ''), PDO::PARAM_STR);
 
-            $titulo = trim((string)($dadosDenuncia['titulo'] ?? ''));
+            $titulo = trim((string)($dadosAnimal['titulo'] ?? ''));
             $declaracao->bindValue(':titulo', $titulo, PDO::PARAM_STR);
 
-            $declaracao->bindValue(':especie', (string)($dadosDenuncia['especie'] ?? ''), PDO::PARAM_STR);
+            $declaracao->bindValue(':especie', (string)($dadosAnimal['especie'] ?? ''), PDO::PARAM_STR);
 
-            $foto = isset($dadosDenuncia['foto']) ? trim((string)$dadosDenuncia['foto']) : '';
+            $foto = isset($dadosAnimal['foto']) ? trim((string)$dadosAnimal['foto']) : '';
             if ($foto === '') {
                 $declaracao->bindValue(':foto', null, PDO::PARAM_NULL);
             } else {
                 $declaracao->bindValue(':foto', $foto, PDO::PARAM_STR);
             }
 
-            $descricao = isset($dadosDenuncia['descricao']) ? trim((string)$dadosDenuncia['descricao']) : '';
+            $descricao = isset($dadosAnimal['descricao']) ? trim((string)$dadosAnimal['descricao']) : '';
             if ($descricao === '') {
                 $declaracao->bindValue(':descricao', null, PDO::PARAM_NULL);
             } else {
                 $declaracao->bindValue(':descricao', $descricao, PDO::PARAM_STR);
             }
 
-            $cor = isset($dadosDenuncia['cor']) ? trim((string)$dadosDenuncia['cor']) : '';
+            $cor = isset($dadosAnimal['cor']) ? trim((string)$dadosAnimal['cor']) : '';
             if ($cor === '') {
                 $declaracao->bindValue(':cor', null, PDO::PARAM_NULL);
             } else {
                 $declaracao->bindValue(':cor', $cor, PDO::PARAM_STR);
             }
 
-            $condicao = isset($dadosDenuncia['condicao']) ? trim((string)$dadosDenuncia['condicao']) : '';
+            $condicao = isset($dadosAnimal['condicao']) ? trim((string)$dadosAnimal['condicao']) : '';
             if ($condicao === '') {
                 $declaracao->bindValue(':condicao', null, PDO::PARAM_NULL);
             } else {
                 $declaracao->bindValue(':condicao', $condicao, PDO::PARAM_STR);
             }
 
-            $localizacao = isset($dadosDenuncia['localizacao']) ? trim((string)$dadosDenuncia['localizacao']) : '';
+            $localizacao = isset($dadosAnimal['localizacao']) ? trim((string)$dadosAnimal['localizacao']) : '';
             if ($localizacao === '') {
                 $declaracao->bindValue(':localizacao', null, PDO::PARAM_NULL);
             } else {
@@ -103,17 +114,18 @@ final class Animal extends Model
             }
 
             $executouSucesso = $declaracao->execute();
-            return $executouSucesso ? $denunciaId : null;
+            return $executouSucesso ? $animalId : null;
 
         } catch (\Throwable $excecao) {
+            error_log("Erro ao criar animal: " . $excecao->getMessage());
             return null;
         }
     }
 
     /**
-     * Salva múltiplas imagens associadas a uma denúncia.
+     * Salva múltiplas imagens de um animal reportado.
      */
-    public function adicionarImagens(string $denunciaId, array $caminhoImagens): void
+    public function adicionarImagens(string $animalId, array $caminhoImagens): void
     {
         if (empty($caminhoImagens)) {
             return;
@@ -129,7 +141,7 @@ final class Animal extends Model
 
             $declaracao->execute([
                 ':id'        => $imagemId,
-                ':animal_id' => $denunciaId,
+                ':animal_id' => $animalId,
                 ':caminho'   => (string)$caminho,
                 ':ordem'     => $ordem++,
             ]);
@@ -137,24 +149,24 @@ final class Animal extends Model
     }
 
     /**
-     * Lista as imagens associadas a uma denúncia, ordenadas por ordem de exibição.
+     * Lista as imagens de um animal reportado, ordenadas por exibição.
      */
-    public function listarImagens(string $denunciaId): array
+    public function listarImagens(string $animalId): array
     {
         $consultaSql = "SELECT caminho, ordem
                 FROM animais_reportados_imagens
                 WHERE animal_id = :id
-                ORDER BY ordem ASC, criado_em ASC";
+                ORDER BY ordem ASC";
         $declaracao = $this->prepare($consultaSql);
-        $declaracao->execute([':id' => $denunciaId]);
+        $declaracao->execute([':id' => $animalId]);
 
         return $declaracao->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     /**
-     * Conta o total de denúncias, opcionalmente filtrando por status.
+     * Conta o total de animais reportados, opcionalmente filtrando por status.
      */
-    public function contarDenuncias(string $filtroStatus = ''): int
+    public function contarAnimais(string $filtroStatus = ''): int
     {
         $consultaSql = "SELECT COUNT(*) AS total FROM animais_reportados";
         $parametros = [];
@@ -170,13 +182,24 @@ final class Animal extends Model
     }
 
     /**
-     * Lista denúncias com paginação e filtro opcional por status.
+     * Lista animais reportados com paginação, filtro opcional por status.
+     * Retorna sempre com campos normalizados (usuario_id, data_criacao).
      */
     public function listarComPaginacao(string $filtroStatus, int $limite, int $deslocamento): array
     {
         $consultaSql = "
         SELECT
-            ar.*,
+            ar.id,
+            ar.criado_por AS usuario_id,
+            ar.titulo,
+            ar.foto,
+            ar.descricao,
+            ar.especie,
+            ar.cor,
+            ar.condicao,
+            ar.localizacao,
+            ar.status,
+            ar.data_hora AS data_criacao,
             u.nome AS usuario_nome
         FROM animais_reportados ar
         LEFT JOIN usuarios u ON u.id = ar.criado_por
@@ -201,33 +224,34 @@ final class Animal extends Model
         $declaracao->execute();
         $resultados = $declaracao->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        // Garante que cada denúncia tenha um título válido
+        // Garante que cada animal tenha um título válido
         foreach ($resultados as &$linha) {
-              $this->garantirTitulo($linha);
+            $this->garantirTitulo($linha);
         }
 
         return $resultados;
     }
+
     /**
-     * Exclui uma denúncia e suas imagens associadas em transação.
+     * Exclui um animal reportado e suas imagens associadas em transação.
      */
-    public function excluir(string $denunciaId): bool
+    public function excluir(string $animalId): bool
     {
         try {
-                $this->beginTransaction();
+            $this->beginTransaction();
 
             // 1) Busca caminhos das imagens
             $declaracao = $this->prepare("SELECT caminho FROM animais_reportados_imagens WHERE animal_id = :id");
-            $declaracao->execute([':id' => $denunciaId]);
+            $declaracao->execute([':id' => $animalId]);
             $caminhos = $declaracao->fetchAll(PDO::FETCH_COLUMN);
 
             // 2) Remove registros das imagens do banco
             $declaracao = $this->prepare("DELETE FROM animais_reportados_imagens WHERE animal_id = :id");
-            $declaracao->execute([':id' => $denunciaId]);
+            $declaracao->execute([':id' => $animalId]);
 
-            // 3) Remove a denúncia
+            // 3) Remove o animal reportado
             $declaracao = $this->prepare("DELETE FROM animais_reportados WHERE id = :id");
-            $declaracao->execute([':id' => $denunciaId]);
+            $declaracao->execute([':id' => $animalId]);
 
             $this->commit();
 
@@ -248,15 +272,17 @@ final class Animal extends Model
             return true;
         } catch (\Throwable $excecao) {
             $this->rollBack();
+            error_log("Erro ao excluir animal: " . $excecao->getMessage());
             return false;
         }
     }
 
     /**
-     * Atualiza o status de uma denúncia e registra no histórico (transação).
+     * Atualiza o status de um animal reportado e registra no histórico (transação).
+     * Esta é a ÚNICA fonte de verdade para atualização de status com histórico.
      */
     public function atualizarStatusComHistorico(
-        string $denunciaId,
+        string $animalId,
         string $statusAnterior,
         string $novoStatus,
         string $usuarioId
@@ -265,15 +291,17 @@ final class Animal extends Model
         try {
             $this->beginTransaction();
 
+            // 1) Atualiza status da denúncia
             $consultaSql = "UPDATE animais_reportados
                     SET status = :novo_status
                     WHERE id = :animal_id";
             $declaracao = $this->prepare($consultaSql);
             $declaracao->execute([
                 ':novo_status' => $novoStatus,
-                ':animal_id'   => $denunciaId,
+                ':animal_id'   => $animalId,
             ]);
 
+            // 2) Registra histórico
             $historicoId = UuidHelper::generateStandard();
             $consultaSql = "INSERT INTO historico_status
                     (id, animal_id, status_anterior, novo_status, atualizado_por)
@@ -282,7 +310,7 @@ final class Animal extends Model
             $declaracao = $this->prepare($consultaSql);
             $declaracao->execute([
                 ':id'              => $historicoId,
-                ':animal_id'       => $denunciaId,
+                ':animal_id'       => $animalId,
                 ':status_anterior' => $statusAnterior,
                 ':novo_status'     => $novoStatus,
                 ':usuario_id'      => $usuarioId,
@@ -292,55 +320,21 @@ final class Animal extends Model
             return true;
         } catch (\Throwable $excecao) {
             $this->rollBack();
-            error_log("ERRO ao atualizar status: " . $excecao->getMessage());
+            error_log("Erro ao atualizar status: " . $excecao->getMessage());
             return false;
         }
     }
 
     /**
-     * Conta quantas denúncias um usuário criou.
-     */
-    public function contarPorAutor(string $usuarioId): int
-    {
-        $consultaSql = "SELECT COUNT(*) AS total
-                FROM animais_reportados
-                WHERE criado_por = :uid";
-        $declaracao = $this->prepare($consultaSql);
-        $declaracao->execute([':uid' => $usuarioId]);
-        $resultado = $declaracao->fetch();
-        return (int)($resultado['total'] ?? 0);
-    }
-
-    /**
-     * Lista denúncias criadas por um usuário específico.
-     */
-    public function listarPorAutor(string $usuarioId): array
-    {
-        $consultaSql = "SELECT id, titulo, foto, descricao, especie, cor, condicao, status, data_hora, localizacao
-                FROM animais_reportados
-                WHERE criado_por = :uid
-                ORDER BY data_hora DESC";
-        $declaracao = $this->prepare($consultaSql);
-        $declaracao->execute([':uid' => $usuarioId]);
-        $resultados = $declaracao->fetchAll() ?: [];
-
-        // Garante que cada denúncia tenha um título válido
-        foreach ($resultados as &$linha) {
-                $this->garantirTitulo($linha);
-        }
-
-        return $resultados;
-    }
-
-    /**
-     * Garante que uma linha de resultado tenha um título válido.
-     * Usa a espécie como fallback quando o título estiver vazio.
+    * Garante que o título de um animal nunca será vazio.
+     * Se vazio, usa a espécie como fallback.
+     * NOTA: Modifica o array por referência.
      */
     private function garantirTitulo(array &$linha): void
     {
-        if (empty(trim((string)($linha['titulo'] ?? '')))) {
-            $linha['titulo'] = (string)($linha['especie'] ?? 'Animal');
+        if (empty($linha['titulo']) || trim($linha['titulo']) === '') {
+            $linha['titulo'] = $linha['especie'] ?? 'Animal sem título';
         }
     }
-
 }
+

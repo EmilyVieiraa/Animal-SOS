@@ -6,9 +6,9 @@ require_once APP_PATH . 'helpers/view_helpers.php';
 $filtroStatus = (string)($status ?? '');
 $paginaAtual = max(1, (int)($page ?? 1));
 $totalPaginas = max(1, (int)($totalPages ?? 1));
-$listaDenuncias = is_array($denuncias ?? null) ? $denuncias : [];
+$animaisListados = is_array($animais ?? null) ? $animais : [];
 
-$possuiDenuncias = !empty($listaDenuncias);
+$possuiAnimais = !empty($animaisListados);
 $deveExibirPaginacao = $totalPaginas > 1;
 
 $janelaPaginacao = 2;
@@ -30,15 +30,15 @@ $urlUltimaPagina = pageUrl($totalPaginas, $filtroStatus);
   <p class="denuncia-listagem__subtitulo">Veja relatos enviados pela comunidade e acompanhe atualizações.</p>
 </section>
 
-<?php if (!$possuiDenuncias): ?>
+<?php if (!$possuiAnimais): ?>
   <div class="denuncia-listagem__vazio">
     <h2>Nenhuma denúncia encontrada.</h2>
   </div>
 <?php else: ?>
   <div class="container">
     <section class="denuncia-listagem__grade">
-      <?php foreach ($listaDenuncias as $denuncia):
-        $dadosDenuncia = $denuncia;
+      <?php foreach ($animaisListados as $animal):
+        $dadosAnimal = $animal;
         $variacaoCard = 'default';
         require __DIR__ . '/../partials/_animal_card.php';
       endforeach; ?>

@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
 
-$old = $old ?? [];
+require_once APP_PATH . 'helpers/view_helpers.php';
+
+$old       = $old ?? [];
+$flashErro = flashConsumir('flash_error') ?? '';
 ?>
 
 <section class="report-page">
@@ -11,23 +14,27 @@ $old = $old ?? [];
 
     <?php if (!empty($erro)): ?>
       <p class="report-error"><?= htmlspecialchars((string)$erro, ENT_QUOTES, 'UTF-8') ?></p>
+    <?php elseif ($flashErro !== ''): ?>
+      <p class="report-error"><?= htmlspecialchars($flashErro, ENT_QUOTES, 'UTF-8') ?></p>
     <?php endif; ?>
 
     <form
       method="post" action="<?= BASE_URL ?>/index.php?c=animal&a=reportar" enctype="multipart/form-data" class="report-form"
     >
+      <?= csrfInput('animal_reportar') ?>
+
       <div class="form-group">
         <label>Título da denúncia *</label>
         <input
-          type="text" name="titulo" required maxlength="120" value="<?= htmlspecialchars((string)($old['titulo'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          type="text" name="titulo" required maxlength="200" value="<?= htmlspecialchars((string)($old['titulo'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
           placeholder="Ex.: Cachorro ferido próximo ao mercado"
         >
       </div>
 
       <div class="form-group">
         <label for="rep_fotos">Adicionar imagens</label>
-        <small class="helper-text">Máximo de 5 fotos não repetidas, até 2MB cada.</small>
-        <input id="rep_fotos" type="file" name="fotos[]" accept="image/*" multiple>
+        <small class="helper-text">Máximo de 5 fotos não repetidas, até 2MB cada. Formatos: JPG, PNG, WEBP.</small>
+        <input id="rep_fotos" type="file" name="fotos[]" accept="image/jpeg,image/png,image/webp" multiple>
 
         <div class="report-previews" id="photoPreview"></div>
       </div>
@@ -49,6 +56,7 @@ $old = $old ?? [];
           type="text"
           name="cor"
           value="<?= htmlspecialchars((string)($old['cor'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          maxlength="100"
           placeholder="Ex.: Marrom claro"
         >
       </div>
@@ -78,44 +86,48 @@ $old = $old ?? [];
         <textarea
           name="descricao"
           rows="4"
+          maxlength="2000"
           placeholder="Descreva aqui..."
         ><?= htmlspecialchars((string)($old['descricao'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
       </div>
 
       <div class="form-group">
         <label>CEP *</label>
-        <input type="text" id="rep_cep" name="cep"
-              value="<?= htmlspecialchars((string)($old['cep'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-              placeholder="00000-000" maxlength="9" inputmode="numeric">
-        <small class="helper-text" id="repCepHelp" style="display:none;"></small>
+        <input type="text" id="rep_cep" name="cep" required
+          value="<?= htmlspecialchars((string)($old['cep'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          placeholder="00000-000" maxlength="9" inputmode="numeric">
       </div>
 
       <div class="form-group">
         <label>Rua *</label>
         <input type="text" id="rep_rua" name="rua" required
-              value="<?= htmlspecialchars((string)($old['rua'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-              placeholder="Nome da rua">
+          value="<?= htmlspecialchars((string)($old['rua'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          placeholder="Nome da rua"
+          maxlength="100">
       </div>
 
       <div class="form-group">
         <label>Número *</label>
         <input type="text" id="rep_numero" name="numero" required
-              value="<?= htmlspecialchars((string)($old['numero'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-              placeholder="Número">
+          value="<?= htmlspecialchars((string)($old['numero'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          placeholder="Número"
+          maxlength="20">
       </div>
 
       <div class="form-group">
         <label>Bairro *</label>
         <input type="text" id="rep_bairro" name="bairro" required
-              value="<?= htmlspecialchars((string)($old['bairro'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-              placeholder="Bairro">
+          value="<?= htmlspecialchars((string)($old['bairro'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          placeholder="Bairro"
+          maxlength="100">
       </div>
 
       <div class="form-group">
         <label>Cidade *</label>
         <input type="text" id="rep_cidade" name="cidade" required
-              value="<?= htmlspecialchars((string)($old['cidade'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-              placeholder="Cidade">
+          value="<?= htmlspecialchars((string)($old['cidade'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+          placeholder="Cidade"
+          maxlength="100">
       </div>
 
       <div class="form-group">

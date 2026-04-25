@@ -3,24 +3,25 @@ declare(strict_types=1);
 
 require_once APP_PATH . 'helpers/view_helpers.php';
 
-// Dados da denúncia
-$denunciaId = (string)($denuncia['id'] ?? '');
-$tituloDenuncia = (string)($denuncia['titulo'] ?? '');
-$descricaoDenuncia = (string)($denuncia['descricao'] ?? '');
-$especieAnimal = (string)($denuncia['especie'] ?? '—');
-$condicaoAnimal = (string)($denuncia['condicao'] ?? '—');
-$corAnimal = (string)($denuncia['cor'] ?? '—');
-$localizacaoDenuncia = (string)($denuncia['localizacao'] ?? '—');
-$statusDenuncia = (string)($denuncia['status'] ?? 'Aguardando');
-$dataRegistro = formatDateTime((string)($denuncia['data_hora'] ?? ''));
-$nomeAutor = (string)($denuncia['usuario_nome'] ?? '—');
-$autorId = (string)($denuncia['criado_por'] ?? '');
+// Dados do animal reportado
+$animalId = (string)($animal['id'] ?? '');
+$tituloAnimal = (string)($animal['titulo'] ?? '');
+$descricaoAnimal = (string)($animal['descricao'] ?? '');
+$especieAnimal = (string)($animal['especie'] ?? '—');
+$condicaoAnimal = (string)($animal['condicao'] ?? '—');
+$corAnimal = (string)($animal['cor'] ?? '—');
+$localizacaoAnimal = (string)($animal['localizacao'] ?? '—');
+$statusAnimal = (string)($animal['status'] ?? 'Aguardando');
+$dataRegistro = formatDateTime((string)($animal['data_criacao'] ?? ''));
+$nomeAutor = (string)($animal['usuario_nome'] ?? '—');
+$autorId = (string)($animal['usuario_id'] ?? '');
 
 // Sessão e mensagens
-$usuarioLogado = !empty($_SESSION['usuario_id']);
-$mensagemSucesso = (string)($_SESSION['flash_success'] ?? '');
-$mensagemErro = (string)($_SESSION['flash_error'] ?? '');
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+$usuarioLogado    = !empty($_SESSION['usuario_id']);
+$mensagemSucesso  = (string)($_SESSION['flash_success'] ?? '');
+$mensagemErro     = (string)($_SESSION['flash_error']   ?? '');
+$mensagemInfo     = (string)($_SESSION['flash_info']    ?? '');
+unset($_SESSION['flash_success'], $_SESSION['flash_error'], $_SESSION['flash_info']);
 
 // Dados preparados no controller
 $podeAtualizarStatus = (bool)($podeAlterarStatus ?? false);
@@ -28,7 +29,7 @@ $statusDisponiveisParaAtualizacao = is_array($statusDisponiveis ?? null) ? $stat
 $imagemPlaceholderTela = (string)($imagemPlaceholder ?? (BASE_URL . '/assets/img/placeholder-animal.jpg'));
 
 // URL de retorno para login
-$urlRetorno = '/index.php?c=animal&a=detalhes&id=' . urlencode($denunciaId);
+$urlRetorno = '/index.php?c=animal&a=detalhes&id=' . urlencode($animalId);
 
 // Dados de comentários (contrato vindo do controller/model)
 $listaComentarios = is_array($comentarios ?? null) ? $comentarios : [];
@@ -68,6 +69,12 @@ $mostrarFormularioStatus = $usuarioLogado
     <?php if ($mensagemErro !== ''): ?>
       <div class="flash flash--error">
         <?= h($mensagemErro) ?>
+      </div>
+    <?php endif; ?>
+
+    <?php if ($mensagemInfo !== ''): ?>
+      <div class="flash flash--info">
+        <?= h($mensagemInfo) ?>
       </div>
     <?php endif; ?>
 
@@ -114,11 +121,11 @@ $mostrarFormularioStatus = $usuarioLogado
       <div class="denuncia-detalhe__hero-conteudo">
 
         <h2 class="denuncia-detalhe__titulo">
-          <?= h($tituloDenuncia !== '' ? $tituloDenuncia : 'Denúncia sem título') ?>
+          <?= h($tituloAnimal !== '' ? $tituloAnimal : 'Animal sem título') ?>
         </h2>
 
-        <?php if ($descricaoDenuncia !== ''): ?>
-          <p class="denuncia-detalhe__descricao"><?= nl2br(h($descricaoDenuncia)) ?></p>
+        <?php if ($descricaoAnimal !== ''): ?>
+          <p class="denuncia-detalhe__descricao"><?= nl2br(h($descricaoAnimal)) ?></p>
         <?php else: ?>
           <p class="denuncia-detalhe__descricao denuncia-detalhe__descricao--suave">Sem descrição.</p>
         <?php endif; ?>
@@ -126,7 +133,7 @@ $mostrarFormularioStatus = $usuarioLogado
         <div class="denuncia-detalhe__metadados denuncia-detalhe__metadados--triplo">
           <div class="denuncia-detalhe__metadado-item">
             <span class="denuncia-detalhe__metadado-rotulo">Status</span>
-            <span class="denuncia-detalhe__metadado-valor"><?= h($statusDenuncia) ?></span>
+            <span class="denuncia-detalhe__metadado-valor"><?= h($statusAnimal) ?></span>
           </div>
 
           <div class="denuncia-detalhe__metadado-item">
@@ -174,7 +181,7 @@ $mostrarFormularioStatus = $usuarioLogado
 
             <div class="denuncia-detalhe__info-linha denuncia-detalhe__info-linha--completa">
               <span class="denuncia-detalhe__info-chave">Local</span>
-              <span class="denuncia-detalhe__info-valor"><?= h($localizacaoDenuncia) ?></span>
+              <span class="denuncia-detalhe__info-valor"><?= h($localizacaoAnimal) ?></span>
             </div>
           </div>
         </div>
@@ -186,7 +193,9 @@ $mostrarFormularioStatus = $usuarioLogado
               action="<?= BASE_URL ?>/index.php?c=animal&a=atualizarStatus"
               class="denuncia-detalhe__form-status"
             >
-              <input type="hidden" name="animal_id" value="<?= h($denunciaId) ?>">
+              <input type="hidden" name="animal_id" value="<?= h($animalId) ?>">
+
+                <?= csrfInput('animal_atualizar_status') ?>
 
               <label class="denuncia-detalhe__form-status-rotulo" for="status-select">Alterar status</label>
 
@@ -200,7 +209,7 @@ $mostrarFormularioStatus = $usuarioLogado
                   <?php foreach ($statusDisponiveisParaAtualizacao as $statusOpcao): ?>
                     <option
                       value="<?= h((string)$statusOpcao) ?>"
-                      <?= (string)$statusOpcao === $statusDenuncia ? 'selected' : '' ?>
+                      <?= (string)$statusOpcao === $statusAnimal ? 'selected' : '' ?>
                     >
                       <?= h((string)$statusOpcao) ?>
                     </option>
@@ -300,7 +309,7 @@ $mostrarFormularioStatus = $usuarioLogado
                 class="denuncia-detalhe__form-comentario"
               >
                 <?= csrfInput(CSRF_CONTEXTO_COMENTARIO_ADICIONAR) ?>
-                <input type="hidden" name="animal_id" value="<?= h($denunciaId) ?>">
+                <input type="hidden" name="animal_id" value="<?= h($animalId) ?>">
 
                 <label for="mensagem-comentario-detalhes">Mensagem</label>
                 <textarea

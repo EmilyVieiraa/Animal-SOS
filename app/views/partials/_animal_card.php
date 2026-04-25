@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * Partial: _animal_card.php
  * Espera:
- * - $dadosDenuncia (array) dados da denúncia
+ * - $dadosAnimal (array) dados do animal reportado
  * - $variacaoCard (opcional) 'default' | 'lg'
  */
 
@@ -13,28 +13,28 @@ if ($variacaoCard !== 'default' && $variacaoCard !== 'lg') {
   $variacaoCard = 'default';
 }
 
-$dadosDenuncia = is_array($dadosDenuncia ?? null) ? $dadosDenuncia : [];
+$dadosAnimal = is_array($dadosAnimal ?? null) ? $dadosAnimal : [];
 
-$idDenuncia = (string)($dadosDenuncia['id'] ?? '');
-$fotoDenuncia = (string)($dadosDenuncia['foto'] ?? '');
-$tituloDenuncia = (string)($dadosDenuncia['titulo'] ?? '');
-$especieAnimal = (string)($dadosDenuncia['especie'] ?? 'Animal');
-$condicaoAnimal = (string)($dadosDenuncia['condicao'] ?? '');
-$descricaoDenuncia = (string)($dadosDenuncia['descricao'] ?? '');
-$dataRegistro = formatDateTime((string)($dadosDenuncia['data_hora'] ?? $dadosDenuncia['data_cadastro'] ?? $dadosDenuncia['criado_em'] ?? ''));
-$statusDenuncia = (string)($dadosDenuncia['status'] ?? '');
-$nomeAutor = (string)($dadosDenuncia['usuario_nome'] ?? $dadosDenuncia['autor_nome'] ?? $dadosDenuncia['nome'] ?? 'Usuário');
+$animalId = (string)($dadosAnimal['id'] ?? '');
+$fotoAnimal = (string)($dadosAnimal['foto'] ?? '');
+$tituloAnimal = (string)($dadosAnimal['titulo'] ?? '');
+$especieAnimal = (string)($dadosAnimal['especie'] ?? 'Animal');
+$condicaoAnimal = (string)($dadosAnimal['condicao'] ?? '');
+$descricaoAnimal = (string)($dadosAnimal['descricao'] ?? '');
+$dataRegistro = formatDateTime((string)($dadosAnimal['data_criacao'] ?? ''));
+$statusAnimal = (string)($dadosAnimal['status'] ?? '');
+$nomeAutor = (string)($dadosAnimal['usuario_nome'] ?? 'Usuário');
 
-$possuiId = ($idDenuncia !== '');
+$possuiId = ($animalId !== '');
 
 $urlDetalhes = $possuiId
-    ? BASE_URL . '/index.php?c=animal&a=detalhes&id=' . urlencode($idDenuncia)
+    ? BASE_URL . '/index.php?c=animal&a=detalhes&id=' . urlencode($animalId)
     : '';
 
-$descricaoLimpa = trim((string)preg_replace('/\s+/', ' ', $descricaoDenuncia));
+$descricaoLimpa = trim((string)preg_replace('/\s+/', ' ', $descricaoAnimal));
 $limiteDescricao = ($variacaoCard === 'lg') ? 220 : 110;
 $descricaoCurta = mb_strimwidth($descricaoLimpa, 0, $limiteDescricao, '...', 'UTF-8');
-$tituloExibicao = ($tituloDenuncia !== '' ? $tituloDenuncia : $especieAnimal);
+$tituloExibicao = ($tituloAnimal !== '' ? $tituloAnimal : $especieAnimal);
 
 $classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grande' : '');
 ?>
@@ -47,8 +47,8 @@ $classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grand
     <div class="denuncia-card__midia" aria-label="Denúncia sem ID (link indisponível)">
   <?php endif; ?>
 
-    <?php if ($fotoDenuncia !== ''): ?>
-      <img src="<?= h(publicImgUrl($fotoDenuncia)) ?>" alt="Foto do animal" loading="lazy">
+    <?php if ($fotoAnimal !== ''): ?>
+      <img src="<?= h(publicImgUrl($fotoAnimal)) ?>" alt="Foto do animal" loading="lazy">
     <?php else: ?>
       <div class="denuncia-card__placeholder">
         <span class="denuncia-card__placeholder-icone">🖼️</span>
@@ -74,9 +74,9 @@ $classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grand
     </h3>
 
     <div class="denuncia-card__etiquetas">
-      <?php if ($statusDenuncia !== ''): ?>
-        <span class="<?= h(statusBadgeClassUI($statusDenuncia)) ?>">
-          <?= h($statusDenuncia) ?>
+      <?php if ($statusAnimal !== ''): ?>
+        <span class="<?= h(statusBadgeClassUI($statusAnimal)) ?>">
+          <?= h($statusAnimal) ?>
         </span>
       <?php endif; ?>
 
