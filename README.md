@@ -27,3 +27,16 @@ Desenvolver uma aplicação que permita:
 - Controle de status (Aguardando, Adoção)
 - Localização de denúncias através de filtros
 - Perfil de usuário
+
+## ✅ Resultado final do projeto
+O Animal SOS foi concluído com uma arquitetura MVC funcional e fluxo completo para o ciclo de denúncias de animais em risco.
+
+Entregas consolidadas no sistema:
+- Autenticação de usuários (login e cadastro) integrada ao fluxo principal da aplicação
+- Recuperação e redefinição de senha por token
+- Registro de denúncias com upload de imagens
+- Listagem paginada e visualização detalhada de denúncias
+- Comentários por denúncia
+- Atualização de status com histórico de mudanças
+- Perfil de usuário com configurações de visibilidade de contato
+- Proteções de segurança aplicadas (CSRF nos fluxos críticos e logout via POST)

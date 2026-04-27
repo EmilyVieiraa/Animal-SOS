@@ -25,7 +25,7 @@ $mensagemInfo     = (string)($mensagemInfo ?? '');
 // Dados preparados no controller
 $podeAtualizarStatus = (bool)($podeAlterarStatus ?? false);
 $statusDisponiveisParaAtualizacao = is_array($statusDisponiveis ?? null) ? $statusDisponiveis : [];
-$imagemPlaceholderTela = (string)($imagemPlaceholder ?? (BASE_URL . '/assets/img/placeholder-animal.jpg'));
+$imagemPlaceholderTela = (string)($imagemPlaceholder ?? (BASE_URL . '/assets/img/placeholder-animal.png'));
 
 // URL de retorno para login
 $urlRetorno = '/index.php?c=animal&a=detalhes&id=' . urlencode($animalId);

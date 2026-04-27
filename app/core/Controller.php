@@ -12,7 +12,7 @@ abstract class Controller
 {
     /**
      * Renderiza uma view dentro do layout padrão.
-     * Ex.: $this->view('auth/login', ['erro' => '...']);
+      * Ex.: $this->view('paginas/home', ['title' => 'Animal SOS']);
      */
     protected function view(string $view, array $data = []): void
     {

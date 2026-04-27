@@ -50,10 +50,7 @@ $classeCard = 'denuncia-card' . ($variacaoCard === 'lg' ? ' denuncia-card--grand
     <?php if ($fotoAnimal !== ''): ?>
       <img src="<?= h(publicImgUrl($fotoAnimal)) ?>" alt="Foto do animal" loading="lazy">
     <?php else: ?>
-      <div class="denuncia-card__placeholder">
-        <span class="denuncia-card__placeholder-icone">🖼️</span>
-        <span class="denuncia-card__placeholder-texto">Sem foto</span>
-      </div>
+      <img src="<?= h(BASE_URL . '/assets/img/placeholder-animal.png') ?>" alt="Imagem padrão do animal" loading="lazy">
     <?php endif; ?>
 
   <?php if ($possuiId): ?>

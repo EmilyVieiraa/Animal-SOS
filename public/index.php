@@ -58,6 +58,7 @@ function catalogoRotasAmigaveis(): array
     return [
         '/' => ['PaginasController', 'home'],
         '/login' => ['AuthController', 'login'],
+        // Endpoint amigável mantido; ação exige POST + CSRF.
         '/logout' => ['AuthController', 'logout'],
         '/esqueci' => ['AuthController', 'esqueciSenha'],
         '/redefinir-senha' => ['AuthController', 'redefinirSenha'],

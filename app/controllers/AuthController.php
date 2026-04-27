@@ -9,6 +9,7 @@ final class AuthController extends Controller
     private const CSRF_CONTEXTO_REGISTRO = 'auth_registro';
     private const CSRF_CONTEXTO_ESQUECI_SENHA = 'auth_esqueci_senha';
     private const CSRF_CONTEXTO_REDEFINIR_SENHA = 'auth_redefinir_senha';
+    private const CSRF_CONTEXTO_LOGOUT = 'auth_logout';
     private const TIPOS_USUARIO_PERMITIDOS = ['Comum', 'ONG', 'Autoridade'];
 
     private Usuario $usuarioModel;
@@ -361,6 +362,16 @@ final class AuthController extends Controller
 
     public function logout(): void
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->responderMetodoNaoPermitido();
+        }
+
+        if (!$this->validarCsrf(self::CSRF_CONTEXTO_LOGOUT)) {
+            flashDefinir('flash_error', 'Sua sessão expirou. Tente sair novamente.');
+            $this->redirect('/index.php?c=paginas&a=home');
+            return;
+        }
+
         unset(
             $_SESSION['usuario_id'],
             $_SESSION['usuario_nome'],

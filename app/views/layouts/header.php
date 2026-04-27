@@ -1,5 +1,6 @@
 <?php
 require_once APP_PATH . 'views/layouts/_contrato_layout.php';
+require_once APP_PATH . 'helpers/view_helpers.php';
 
 // Contrato global normalizado para header/footer.
 $layoutGlobal = normalizarContratoLayoutGlobal($contratoLayoutGlobal ?? []);
@@ -61,10 +62,12 @@ $urlCadastroHome = (string)$navegacaoGlobal['urlCadastroHome'];
             <span class="profile-text">Meu Perfil</span>
           </a>
 
-          <a class="profile-chip profile-chip--primary"
-            href="<?= $urlLogout ?>">
-            <span class="profile-text">Sair</span>
-          </a>
+          <form method="post" action="<?= $urlLogout ?>" style="margin: 0;">
+            <?= csrfInput('auth_logout') ?>
+            <button type="submit" class="profile-chip profile-chip--primary" style="border: 0; cursor: pointer;">
+              <span class="profile-text">Sair</span>
+            </button>
+          </form>
         <?php else: ?>
           <a class="btn btn-login" href="<?= $urlLoginHome ?>">Login</a>
           <a class="btn btn-primary" href="<?= $urlCadastroHome ?>">Cadastrar</a>

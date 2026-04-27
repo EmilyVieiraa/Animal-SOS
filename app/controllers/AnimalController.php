@@ -110,7 +110,7 @@ final class AnimalController extends Controller
             'historico'           => $historicoAnimal,
             'podeAlterarStatus'   => $podeAlterarStatus,
             'statusDisponiveis'   => $statusDisponiveis,
-            'imagemPlaceholder'   => BASE_URL . '/assets/img/placeholder-animal.jpg',
+            'imagemPlaceholder'   => BASE_URL . '/assets/img/placeholder-animal.png',
             'mensagemSucesso'     => flashConsumirTexto('flash_success'),
             'mensagemErro'        => flashConsumirTexto('flash_error'),
             'mensagemInfo'        => flashConsumirTexto('flash_info'),
@@ -261,20 +261,21 @@ final class AnimalController extends Controller
             return 'Espécie é obrigatória.';
         }
 
-        // Validação de CEP se preenchido
-        if ($dados['cep'] !== '') {
-            $cepLimpo = preg_replace('/\D+/', '', $dados['cep']);
-            if (strlen($cepLimpo) !== 8) {
-                return 'CEP inválido. Use o formato 00000-000 ou 00000000.';
-            }
+        if ($dados['cep'] === '' || $dados['rua'] === '' || $dados['numero'] === ''
+            || $dados['bairro'] === '' || $dados['cidade'] === '' || $dados['estado'] === '') {
+            return 'Preencha todos os campos de endereço obrigatórios.';
         }
 
-        // Validação de UF se preenchido
-        if ($dados['estado'] !== '') {
-            $estadoUpper = strtoupper(trim($dados['estado']));
-            if (!in_array($estadoUpper, self::ESTADOS_BRASIL_VALIDOS, true)) {
-                return 'Estado inválido. Selecione um estado válido.';
-            }
+        // Validação de CEP obrigatório
+        $cepLimpo = preg_replace('/\D+/', '', $dados['cep']);
+        if (strlen($cepLimpo) !== 8) {
+            return 'CEP inválido. Use o formato 00000-000 ou 00000000.';
+        }
+
+        // Validação de UF obrigatória
+        $estadoUpper = strtoupper(trim($dados['estado']));
+        if (!in_array($estadoUpper, self::ESTADOS_BRASIL_VALIDOS, true)) {
+            return 'Estado inválido. Selecione um estado válido.';
         }
 
         // Limite de caracteres para campos de texto
